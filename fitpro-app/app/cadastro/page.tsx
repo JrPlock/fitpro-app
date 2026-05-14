@@ -127,7 +127,7 @@ export default function CadastroPage() {
           <button
             onClick={handleCadastro}
             disabled={loading}
-            className="w-full py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50"
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-5 md:p-8 space-y-4 md:space-y-6">
           >
             {loading ? 'Criando conta...' : 'Criar conta'}
           </button>
