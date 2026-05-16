@@ -13,11 +13,11 @@ export default function LogoutButton() {
   }
 
   return (
-    <button
-      onClick={handleLogout}
-      className="text-sm text-gray-500 hover:text-red-500 transition-colors font-medium"
-    >
-      Sair
+    <button onClick={handleLogout}
+      className="w-9 h-9 rounded-full flex items-center justify-center text-sm transition-all hover:scale-110"
+      style={{ background: '#1c1c1c', border: '1px solid #2a2a2a', color: '#888' }}
+      title="Sair">
+      ↩
     </button>
   )
 }
