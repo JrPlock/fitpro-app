@@ -81,11 +81,19 @@ export default function CadastroPage() {
             </div>
           ))}
 
+<<<<<<< HEAD
           {erro && <p className="text-xs text-red-400 bg-red-950 border border-red-900 rounded-xl px-3 py-2">{erro}</p>}
 
           <button onClick={handleCadastro} disabled={loading}
             className="w-full py-3.5 rounded-xl font-bold text-white transition-all hover:scale-[1.02] disabled:opacity-50"
             style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', boxShadow: '0 0 20px rgba(249,115,22,0.3)' }}>
+=======
+          <button
+            onClick={handleCadastro}
+            disabled={loading}
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-5 md:p-8 space-y-4 md:space-y-6">
+          >
+>>>>>>> 0f10f621cee282c1d98c6a6e7d291386cd2c4609
             {loading ? 'Criando conta...' : 'Criar conta'}
           </button>
         </div>
