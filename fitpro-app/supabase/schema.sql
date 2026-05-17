@@ -1,9 +1,9 @@
 -- =============================================
 -- FITPRO - Schema do banco de dados (Supabase)
--- Cole este SQL no SQL Editor do Supabase
+-- Cole este SQL no SQL Editor do Supabase para criar o banco do zero.
+-- Para bancos já em produção, use também as migrações versionadas desta pasta.
 -- =============================================
 
--- Tabela de perfis (personal e alunos)
 CREATE TABLE profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   nome TEXT NOT NULL,
@@ -16,7 +16,6 @@ CREATE TABLE profiles (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Tabela de treinos
 CREATE TABLE treinos (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   personal_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
@@ -28,7 +27,6 @@ CREATE TABLE treinos (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Tabela de exercícios dentro de um treino
 CREATE TABLE exercicios (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   treino_id UUID REFERENCES treinos(id) ON DELETE CASCADE NOT NULL,
@@ -41,7 +39,6 @@ CREATE TABLE exercicios (
   ordem INTEGER DEFAULT 0
 );
 
--- Tabela de registros de medidas
 CREATE TABLE medidas (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   aluno_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
@@ -63,7 +60,6 @@ CREATE TABLE medidas (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Tabela de alimentos (banco nutricional)
 CREATE TABLE alimentos (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   nome TEXT NOT NULL,
@@ -76,7 +72,6 @@ CREATE TABLE alimentos (
   fonte TEXT DEFAULT 'manual'
 );
 
--- Tabela de refeições registradas pelo aluno
 CREATE TABLE refeicoes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   aluno_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
@@ -86,7 +81,6 @@ CREATE TABLE refeicoes (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Itens de cada refeição
 CREATE TABLE refeicao_itens (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   refeicao_id UUID REFERENCES refeicoes(id) ON DELETE CASCADE NOT NULL,
@@ -100,6 +94,58 @@ CREATE TABLE refeicao_itens (
 );
 
 -- =============================================
+-- AUTOMAÇÃO DE PERFIL
+-- =============================================
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  requested_role text;
+BEGIN
+  requested_role := COALESCE(new.raw_user_meta_data->>'role', 'aluno');
+
+  IF requested_role NOT IN ('personal', 'aluno') THEN
+    requested_role := 'aluno';
+  END IF;
+
+  INSERT INTO public.profiles (id, nome, email, role)
+  VALUES (
+    new.id,
+    COALESCE(NULLIF(new.raw_user_meta_data->>'nome', ''), split_part(new.email, '@', 1)),
+    new.email,
+    requested_role
+  )
+  ON CONFLICT (id) DO UPDATE
+    SET nome = EXCLUDED.nome,
+        email = EXCLUDED.email,
+        role = EXCLUDED.role;
+
+  RETURN new;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.current_user_role()
+RETURNS text
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+  SELECT role
+  FROM public.profiles
+  WHERE id = auth.uid()
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT ON auth.users
+FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- =============================================
 -- SEGURANÇA: Row Level Security (RLS)
 -- =============================================
 
@@ -111,36 +157,103 @@ ALTER TABLE refeicoes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE refeicao_itens ENABLE ROW LEVEL SECURITY;
 ALTER TABLE alimentos ENABLE ROW LEVEL SECURITY;
 
--- Profiles: usuário vê o próprio perfil; personal vê seus alunos
-CREATE POLICY "Usuário vê próprio perfil" ON profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Personal vê seus alunos" ON profiles FOR SELECT USING (
-  EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'personal')
-);
-CREATE POLICY "Usuário insere próprio perfil" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
-CREATE POLICY "Usuário atualiza próprio perfil" ON profiles FOR UPDATE USING (auth.uid() = id);
-
--- Treinos: personal cria/edita; aluno vê os seus
-CREATE POLICY "Personal gerencia treinos" ON treinos FOR ALL USING (personal_id = auth.uid());
-CREATE POLICY "Aluno vê seus treinos" ON treinos FOR SELECT USING (aluno_id = auth.uid());
-
--- Exercícios: acompanha o treino
-CREATE POLICY "Acesso a exercícios via treino" ON exercicios FOR ALL USING (
-  EXISTS (SELECT 1 FROM treinos t WHERE t.id = treino_id AND (t.personal_id = auth.uid() OR t.aluno_id = auth.uid()))
+CREATE POLICY "profiles_select_own_or_students" ON profiles
+FOR SELECT USING (
+  auth.uid() = id
+  OR (
+    role = 'aluno'
+    AND (personal_id = auth.uid() OR personal_id IS NULL)
+    AND public.current_user_role() = 'personal'
+  )
 );
 
--- Medidas: aluno gerencia as próprias; personal do aluno pode ver
-CREATE POLICY "Aluno gerencia medidas" ON medidas FOR ALL USING (aluno_id = auth.uid());
-CREATE POLICY "Personal vê medidas de seus alunos" ON medidas FOR SELECT USING (
-  EXISTS (SELECT 1 FROM profiles p WHERE p.id = aluno_id AND p.personal_id = auth.uid())
+CREATE POLICY "profiles_insert_own" ON profiles
+FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "profiles_update_own" ON profiles
+FOR UPDATE USING (auth.uid() = id)
+WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "profiles_personal_link_students" ON profiles
+FOR UPDATE USING (
+  role = 'aluno'
+  AND (personal_id IS NULL OR personal_id = auth.uid())
+  AND public.current_user_role() = 'personal'
+)
+WITH CHECK (
+  role = 'aluno'
+  AND (personal_id IS NULL OR personal_id = auth.uid())
 );
 
--- Refeições: somente o próprio aluno
-CREATE POLICY "Aluno gerencia refeições" ON refeicoes FOR ALL USING (aluno_id = auth.uid());
-
--- Itens de refeição
-CREATE POLICY "Acesso a itens via refeição" ON refeicao_itens FOR ALL USING (
-  EXISTS (SELECT 1 FROM refeicoes r WHERE r.id = refeicao_id AND r.aluno_id = auth.uid())
+CREATE POLICY "treinos_personal_manage" ON treinos
+FOR ALL USING (personal_id = auth.uid())
+WITH CHECK (
+  personal_id = auth.uid()
+  AND EXISTS (
+    SELECT 1
+    FROM profiles aluno
+    WHERE aluno.id = aluno_id
+      AND aluno.role = 'aluno'
+      AND aluno.personal_id = auth.uid()
+  )
 );
 
--- Alimentos: todos autenticados podem ler
-CREATE POLICY "Todos leem alimentos" ON alimentos FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "treinos_aluno_select" ON treinos
+FOR SELECT USING (aluno_id = auth.uid());
+
+CREATE POLICY "exercicios_access_via_treino" ON exercicios
+FOR ALL USING (
+  EXISTS (
+    SELECT 1
+    FROM treinos treino
+    WHERE treino.id = treino_id
+      AND (treino.personal_id = auth.uid() OR treino.aluno_id = auth.uid())
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1
+    FROM treinos treino
+    WHERE treino.id = treino_id
+      AND treino.personal_id = auth.uid()
+  )
+);
+
+CREATE POLICY "medidas_aluno_manage" ON medidas
+FOR ALL USING (aluno_id = auth.uid())
+WITH CHECK (aluno_id = auth.uid());
+
+CREATE POLICY "medidas_personal_select" ON medidas
+FOR SELECT USING (
+  EXISTS (
+    SELECT 1
+    FROM profiles aluno
+    WHERE aluno.id = aluno_id
+      AND aluno.personal_id = auth.uid()
+  )
+);
+
+CREATE POLICY "refeicoes_aluno_manage" ON refeicoes
+FOR ALL USING (aluno_id = auth.uid())
+WITH CHECK (aluno_id = auth.uid());
+
+CREATE POLICY "refeicao_itens_access_via_refeicao" ON refeicao_itens
+FOR ALL USING (
+  EXISTS (
+    SELECT 1
+    FROM refeicoes refeicao
+    WHERE refeicao.id = refeicao_id
+      AND refeicao.aluno_id = auth.uid()
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1
+    FROM refeicoes refeicao
+    WHERE refeicao.id = refeicao_id
+      AND refeicao.aluno_id = auth.uid()
+  )
+);
+
+CREATE POLICY "alimentos_authenticated_select" ON alimentos
+FOR SELECT USING (auth.role() = 'authenticated');

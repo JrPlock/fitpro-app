@@ -1,38 +1,76 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+interface AlunoProfile {
+  id: string
+  nome: string
+  email: string
+  personal_id: string | null
+}
+
 export default function AdicionarAlunoPage() {
   const [email, setEmail] = useState('')
-  const [aluno, setAluno] = useState<any>(null)
+  const [aluno, setAluno] = useState<AlunoProfile | null>(null)
   const [buscando, setBuscando] = useState(false)
   const [vinculando, setVinculando] = useState(false)
   const [erro, setErro] = useState('')
   const [msg, setMsg] = useState('')
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   async function buscar() {
-    if (!email.trim()) { setErro('Digite um e-mail.'); return }
-    setBuscando(true); setErro(''); setAluno(null); setMsg('')
-    const { data } = await supabase.from('profiles').select('*').eq('email', email.trim().toLowerCase()).eq('role', 'aluno').single()
+    const emailNormalizado = email.trim().toLowerCase()
+    if (!emailNormalizado) { setErro('Digite um e-mail.'); return }
+
+    setBuscando(true)
+    setErro('')
+    setAluno(null)
+    setMsg('')
+
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, nome, email, personal_id')
+      .eq('email', emailNormalizado)
+      .eq('role', 'aluno')
+      .single()
+
     if (!data) setErro('Nenhum aluno encontrado com esse e-mail.')
     else if (data.personal_id) setErro('Este aluno já está vinculado a outro personal.')
     else setAluno(data)
+
     setBuscando(false)
   }
 
   async function vincular() {
     if (!aluno) return
+
     setVinculando(true)
+    setErro('')
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    const { error } = await supabase.from('profiles').update({ personal_id: user.id }).eq('id', aluno.id)
-    if (error) { setErro(`Erro: ${error.message}`); setVinculando(false); return }
-    setMsg('✅ Aluno vinculado!')
+
+    if (!user) {
+      setErro('Sua sessão expirou. Entre novamente para vincular o aluno.')
+      setVinculando(false)
+      return
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ personal_id: user.id })
+      .eq('id', aluno.id)
+      .is('personal_id', null)
+
+    if (error) {
+      setErro(`Erro: ${error.message}`)
+      setVinculando(false)
+      return
+    }
+
+    setMsg('Aluno vinculado!')
     setTimeout(() => router.push('/dashboard/personal/alunos'), 1500)
   }
 
@@ -61,7 +99,7 @@ export default function AdicionarAlunoPage() {
             <button onClick={buscar} disabled={buscando}
               className="px-4 py-3 rounded-xl font-bold text-white text-sm disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', minWidth: 48 }}>
-              {buscando ? '...' : '🔍'}
+              {buscando ? '...' : 'Buscar'}
             </button>
           </div>
           {erro && <p className="text-xs rounded-xl px-3 py-2" style={{ background: 'var(--danger-bg)', border: '1px solid #3a1515', color: 'var(--danger)' }}>{erro}</p>}
@@ -70,7 +108,7 @@ export default function AdicionarAlunoPage() {
 
         {aluno && (
           <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--bg-card)', border: '1px solid rgba(249,115,22,0.4)' }}>
-            <p className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>Aluno encontrado ✓</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>Aluno encontrado</p>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg"
                 style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}>
@@ -84,7 +122,7 @@ export default function AdicionarAlunoPage() {
             <button onClick={vincular} disabled={vinculando}
               className="w-full py-3 rounded-xl font-bold text-white transition-all hover:scale-[1.02] disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))' }}>
-              {vinculando ? 'Vinculando...' : '✅ Confirmar vínculo'}
+              {vinculando ? 'Vinculando...' : 'Confirmar vínculo'}
             </button>
           </div>
         )}
