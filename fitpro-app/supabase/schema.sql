@@ -93,6 +93,26 @@ CREATE TABLE refeicao_itens (
   gorduras NUMERIC(7,2)
 );
 
+CREATE TABLE pacotes_alunos (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  personal_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  aluno_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  tipo_atendimento TEXT NOT NULL DEFAULT 'presencial' CHECK (tipo_atendimento IN ('presencial', 'online', 'hibrido')),
+  data_inicio DATE NOT NULL DEFAULT CURRENT_DATE,
+  data_vencimento DATE NOT NULL,
+  sessoes_semana INTEGER CHECK (sessoes_semana IS NULL OR sessoes_semana BETWEEN 0 AND 14),
+  dias_treino TEXT[] DEFAULT '{}',
+  valor_mensal NUMERIC(10,2),
+  status TEXT NOT NULL DEFAULT 'ativo' CHECK (status IN ('ativo', 'pausado', 'cancelado')),
+  observacoes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX pacotes_alunos_um_ativo_por_aluno
+ON pacotes_alunos (aluno_id)
+WHERE status = 'ativo';
+
 -- =============================================
 -- AUTOMAÇÃO DE PERFIL
 -- =============================================
@@ -156,6 +176,7 @@ ALTER TABLE medidas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE refeicoes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE refeicao_itens ENABLE ROW LEVEL SECURITY;
 ALTER TABLE alimentos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pacotes_alunos ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "profiles_select_own_or_students" ON profiles
 FOR SELECT USING (
@@ -257,3 +278,25 @@ WITH CHECK (
 
 CREATE POLICY "alimentos_authenticated_select" ON alimentos
 FOR SELECT USING (auth.role() = 'authenticated');
+
+CREATE POLICY "pacotes_select_personal_or_aluno" ON pacotes_alunos
+FOR SELECT USING (personal_id = auth.uid() OR aluno_id = auth.uid());
+
+CREATE POLICY "pacotes_personal_insert" ON pacotes_alunos
+FOR INSERT WITH CHECK (
+  personal_id = auth.uid()
+  AND EXISTS (
+    SELECT 1
+    FROM profiles aluno
+    WHERE aluno.id = aluno_id
+      AND aluno.role = 'aluno'
+      AND aluno.personal_id = auth.uid()
+  )
+);
+
+CREATE POLICY "pacotes_personal_update" ON pacotes_alunos
+FOR UPDATE USING (personal_id = auth.uid())
+WITH CHECK (personal_id = auth.uid());
+
+CREATE POLICY "pacotes_personal_delete" ON pacotes_alunos
+FOR DELETE USING (personal_id = auth.uid());
