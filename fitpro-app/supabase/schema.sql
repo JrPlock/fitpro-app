@@ -121,10 +121,12 @@ CREATE TABLE registros_exercicios (
   aluno_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   data DATE NOT NULL DEFAULT CURRENT_DATE,
   concluido BOOLEAN NOT NULL DEFAULT false,
+  status_execucao TEXT NOT NULL DEFAULT 'pendente' CHECK (status_execucao IN ('pendente', 'feito', 'nao_feito')),
   peso NUMERIC(7,2),
   dor TEXT NOT NULL DEFAULT 'nao' CHECK (dor IN ('nao', 'leve', 'moderada', 'forte')),
   dificuldade INTEGER CHECK (dificuldade IS NULL OR dificuldade BETWEEN 1 AND 10),
   observacoes TEXT,
+  motivo_nao_feito TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE (aluno_id, exercicio_id, data)

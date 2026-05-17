@@ -25,13 +25,16 @@ interface Exercicio {
 }
 
 type Dor = 'nao' | 'leve' | 'moderada' | 'forte'
+type StatusExecucao = 'pendente' | 'feito' | 'nao_feito'
 
 type RegistroState = {
   concluido: boolean
+  status_execucao: StatusExecucao
   peso: string
   dor: Dor
   dificuldade: string
   observacoes: string
+  motivo_nao_feito: string
   saved: boolean
   saving: boolean
 }
@@ -39,18 +42,22 @@ type RegistroState = {
 type RegistroRow = {
   exercicio_id: string
   concluido: boolean
+  status_execucao: StatusExecucao | null
   peso: number | null
   dor: Dor
   dificuldade: number | null
   observacoes: string | null
+  motivo_nao_feito: string | null
 }
 
 const registroInicial = (): RegistroState => ({
   concluido: false,
+  status_execucao: 'pendente',
   peso: '',
   dor: 'nao',
   dificuldade: '',
   observacoes: '',
+  motivo_nao_feito: '',
   saved: false,
   saving: false,
 })
@@ -93,7 +100,7 @@ export default function TreinoAlunoDetailPage() {
       const [{ data: treinoData }, { data: exerciciosData }, { data: registrosData }] = await Promise.all([
         supabase.from('treinos').select('id, nome, objetivo, descricao').eq('id', id).eq('aluno_id', user.id).single(),
         supabase.from('exercicios').select('*').eq('treino_id', id).order('ordem'),
-        supabase.from('registros_exercicios').select('exercicio_id, concluido, peso, dor, dificuldade, observacoes').eq('treino_id', id).eq('aluno_id', user.id).eq('data', dataRegistro),
+        supabase.from('registros_exercicios').select('exercicio_id, concluido, status_execucao, peso, dor, dificuldade, observacoes, motivo_nao_feito').eq('treino_id', id).eq('aluno_id', user.id).eq('data', dataRegistro),
       ])
 
       if (treinoData) setTreino(treinoData)
@@ -106,14 +113,18 @@ export default function TreinoAlunoDetailPage() {
 
         exerciciosData.forEach(exercicio => {
           const row = registrosPorExercicio.get(exercicio.id)
-          nextSeries[exercicio.id] = Array(exercicio.series).fill(Boolean(row?.concluido))
+          const statusExecucao = row?.status_execucao || (row?.concluido ? 'feito' : 'pendente')
+          const concluido = statusExecucao === 'feito' || Boolean(row?.concluido)
+          nextSeries[exercicio.id] = Array(exercicio.series).fill(concluido)
           nextRegistros[exercicio.id] = row
             ? {
-                concluido: row.concluido,
+                concluido,
+                status_execucao: statusExecucao,
                 peso: row.peso ? String(row.peso) : '',
                 dor: row.dor,
                 dificuldade: row.dificuldade ? String(row.dificuldade) : '',
                 observacoes: row.observacoes || '',
+                motivo_nao_feito: row.motivo_nao_feito || '',
                 saved: true,
                 saving: false,
               }
@@ -161,7 +172,11 @@ export default function TreinoAlunoDetailPage() {
     setSeries(prev => ({ ...prev, [exercicio.id]: novas }))
 
     const todasFeitas = novas.length > 0 && novas.every(Boolean)
-    updateRegistro(exercicio.id, { concluido: todasFeitas })
+    updateRegistro(exercicio.id, {
+      concluido: todasFeitas,
+      status_execucao: todasFeitas ? 'feito' : 'pendente',
+      motivo_nao_feito: todasFeitas ? '' : registros[exercicio.id]?.motivo_nao_feito || '',
+    })
 
     if (!atual) {
       setTimer(exercicio.descanso_segundos)
@@ -169,8 +184,28 @@ export default function TreinoAlunoDetailPage() {
     }
   }
 
+  function marcarExecucao(exercicio: Exercicio, status: StatusExecucao) {
+    const concluido = status === 'feito'
+    setSeries(prev => ({
+      ...prev,
+      [exercicio.id]: Array(exercicio.series).fill(concluido),
+    }))
+    updateRegistro(exercicio.id, {
+      concluido,
+      status_execucao: status,
+      motivo_nao_feito: status === 'nao_feito' ? registros[exercicio.id]?.motivo_nao_feito || '' : '',
+    })
+  }
+
   async function salvarRegistro(exercicio: Exercicio) {
     const registro = registros[exercicio.id] || registroInicial()
+
+    if (registro.status_execucao === 'nao_feito' && !registro.motivo_nao_feito.trim()) {
+      setErro('Informe o motivo de não ter feito este exercício.')
+      return
+    }
+
+    setErro('')
     setRegistros(prev => ({ ...prev, [exercicio.id]: { ...registro, saving: true } }))
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -187,11 +222,13 @@ export default function TreinoAlunoDetailPage() {
         exercicio_id: exercicio.id,
         aluno_id: user.id,
         data: dataRegistro,
-        concluido: registro.concluido,
+        concluido: registro.status_execucao === 'feito',
+        status_execucao: registro.status_execucao,
         peso: registro.peso ? Number(registro.peso.replace(',', '.')) : null,
         dor: registro.dor,
         dificuldade: registro.dificuldade ? Number(registro.dificuldade) : null,
         observacoes: registro.observacoes.trim() || null,
+        motivo_nao_feito: registro.status_execucao === 'nao_feito' ? registro.motivo_nao_feito.trim() : null,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'aluno_id,exercicio_id,data' })
 
@@ -251,15 +288,16 @@ export default function TreinoAlunoDetailPage() {
         {exercicios.map((exercicio, index) => {
           const registro = registros[exercicio.id] || registroInicial()
           const seriesExercicio = series[exercicio.id] || []
-          const todas = registro.concluido
+          const todas = registro.status_execucao === 'feito'
+          const naoFeito = registro.status_execucao === 'nao_feito'
 
           return (
             <div key={exercicio.id} className="rounded-2xl p-5 space-y-4 transition-all"
-              style={{ background: todas ? 'var(--accent-glow)' : 'var(--bg-card)', border: `1px solid ${todas ? 'var(--accent-glow-strong)' : 'var(--border)'}` }}>
+              style={{ background: todas ? 'var(--accent-glow)' : 'var(--bg-card)', border: `1px solid ${todas ? 'var(--accent-glow-strong)' : naoFeito ? 'var(--danger-border)' : 'var(--border)'}` }}>
               <div className="flex items-start gap-3">
-                <button onClick={() => updateRegistro(exercicio.id, { concluido: !registro.concluido })}
+                <button onClick={() => marcarExecucao(exercicio, todas ? 'pendente' : 'feito')}
                   className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
-                  style={{ background: todas ? 'var(--accent)' : 'var(--accent-glow)', color: todas ? 'white' : 'var(--accent)' }}>
+                  style={{ background: todas ? 'var(--accent)' : naoFeito ? 'var(--danger-bg)' : 'var(--accent-glow)', color: todas ? 'white' : naoFeito ? 'var(--danger)' : 'var(--accent)' }}>
                   {todas ? '✓' : index + 1}
                 </button>
                 <div className="min-w-0">
@@ -298,6 +336,32 @@ export default function TreinoAlunoDetailPage() {
                   </button>
                 ))}
               </div>
+
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>STATUS DO EXERCÍCIO</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => marcarExecucao(exercicio, 'feito')}
+                    className="py-3 rounded-xl text-sm font-bold transition-all"
+                    style={{ background: todas ? 'var(--success)' : 'var(--bg-card2)', color: todas ? 'white' : 'var(--text-dim)', border: todas ? 'none' : '1px solid var(--border)' }}>
+                    Feito
+                  </button>
+                  <button type="button" onClick={() => marcarExecucao(exercicio, 'nao_feito')}
+                    className="py-3 rounded-xl text-sm font-bold transition-all"
+                    style={{ background: naoFeito ? 'var(--danger-bg)' : 'var(--bg-card2)', color: naoFeito ? 'var(--danger)' : 'var(--text-dim)', border: `1px solid ${naoFeito ? 'var(--danger-border)' : 'var(--border)'}` }}>
+                    Não feito
+                  </button>
+                </div>
+              </div>
+
+              {naoFeito && (
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>MOTIVO DE NÃO TER FEITO</label>
+                  <textarea value={registro.motivo_nao_feito} onChange={event => updateRegistro(exercicio.id, { motivo_nao_feito: event.target.value })}
+                    rows={2} placeholder="Ex: dor no joelho, academia cheia, aparelho ocupado..."
+                    className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
+                    style={{ background: 'var(--bg-card2)', border: '1px solid var(--danger-border)', color: 'var(--text)' }} />
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
