@@ -11,7 +11,7 @@ import {
 
 const METRICAS = [
   { key: 'peso', label: 'Peso (kg)', cor: '#16a34a' },
-  { key: 'percentual_gordura', label: '% Gordura', cor: '#f97316' },
+  { key: 'percentual_gordura', label: '% Gordura', cor: 'var(--accent)' },
   { key: 'cintura', label: 'Cintura (cm)', cor: '#8b5cf6' },
   { key: 'quadril', label: 'Quadril (cm)', cor: '#ec4899' },
   { key: 'braco_dir', label: 'Braço D (cm)', cor: '#3b82f6' },

@@ -39,51 +39,51 @@ export default function AdicionarAlunoPage() {
   const inputCls = "w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all"
 
   return (
-    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
-      <nav className="px-5 py-4 flex items-center gap-3 sticky top-0 z-10" style={{ background: '#0a0a0a', borderBottom: '1px solid #1a1a1a' }}>
-        <Link href="/dashboard/personal/alunos" style={{ color: '#555' }} className="text-sm hover:text-white">← Alunos</Link>
-        <span style={{ color: '#2a2a2a' }}>|</span>
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+      <nav className="px-5 py-4 flex items-center gap-3 sticky top-0 z-10" style={{ background: 'var(--bg)', borderBottom: '1px solid #1a1a1a' }}>
+        <Link href="/dashboard/personal/alunos" style={{ color: 'var(--text-dim)' }} className="text-sm hover:text-white">← Alunos</Link>
+        <span style={{ color: 'var(--border)' }}>|</span>
         <span className="font-bold text-white">Vincular Aluno</span>
       </nav>
 
       <main className="max-w-md mx-auto px-5 py-6 space-y-4">
-        <div className="rounded-2xl p-4 text-sm" style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)', color: '#f97316' }}>
+        <div className="rounded-2xl p-4 text-sm" style={{ background: 'var(--accent-glow)', border: '1px solid rgba(249,115,22,0.2)', color: 'var(--accent)' }}>
           O aluno precisa criar uma conta no FitPro como <strong>Aluno</strong> primeiro.
         </div>
 
-        <div className="rounded-2xl p-5 space-y-4" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+        <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--bg-card)', border: '1px solid #2a2a2a' }}>
           <h2 className="font-bold text-white">Buscar por e-mail</h2>
           <div className="flex gap-2">
             <input type="email" value={email} onChange={e => { setEmail(e.target.value); setAluno(null); setErro(''); setMsg('') }}
               onKeyDown={e => e.key === 'Enter' && buscar()}
               placeholder="email@doaluno.com" className={inputCls}
-              style={{ background: '#1c1c1c', border: '1px solid #2a2a2a' }} />
+              style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a' }} />
             <button onClick={buscar} disabled={buscando}
               className="px-4 py-3 rounded-xl font-bold text-white text-sm disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', minWidth: 48 }}>
+              style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', minWidth: 48 }}>
               {buscando ? '...' : '🔍'}
             </button>
           </div>
-          {erro && <p className="text-xs rounded-xl px-3 py-2" style={{ background: '#1a0a0a', border: '1px solid #3a1515', color: '#f87171' }}>{erro}</p>}
-          {msg && <p className="text-xs rounded-xl px-3 py-2" style={{ background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.3)', color: '#f97316' }}>{msg}</p>}
+          {erro && <p className="text-xs rounded-xl px-3 py-2" style={{ background: 'var(--danger-bg)', border: '1px solid #3a1515', color: 'var(--danger)' }}>{erro}</p>}
+          {msg && <p className="text-xs rounded-xl px-3 py-2" style={{ background: 'var(--accent-glow)', border: '1px solid rgba(249,115,22,0.3)', color: 'var(--accent)' }}>{msg}</p>}
         </div>
 
         {aluno && (
-          <div className="rounded-2xl p-5 space-y-4" style={{ background: '#141414', border: '1px solid rgba(249,115,22,0.4)' }}>
-            <p className="text-sm font-semibold" style={{ color: '#f97316' }}>Aluno encontrado ✓</p>
+          <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--bg-card)', border: '1px solid rgba(249,115,22,0.4)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>Aluno encontrado ✓</p>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg"
-                style={{ background: 'rgba(249,115,22,0.2)', color: '#f97316' }}>
+                style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}>
                 {aluno.nome?.charAt(0).toUpperCase()}
               </div>
               <div>
                 <p className="font-bold text-white">{aluno.nome}</p>
-                <p className="text-sm" style={{ color: '#666' }}>{aluno.email}</p>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{aluno.email}</p>
               </div>
             </div>
             <button onClick={vincular} disabled={vinculando}
               className="w-full py-3 rounded-xl font-bold text-white transition-all hover:scale-[1.02] disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)' }}>
+              style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))' }}>
               {vinculando ? 'Vinculando...' : '✅ Confirmar vínculo'}
             </button>
           </div>

@@ -18,36 +18,36 @@ export default async function RelatoriosPage() {
   }))
 
   return (
-    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
-      <nav className="px-5 py-4 flex items-center gap-3 sticky top-0 z-10" style={{ background: '#0a0a0a', borderBottom: '1px solid #1a1a1a' }}>
-        <Link href="/dashboard/personal" style={{ color: '#555' }} className="text-sm hover:text-white">← Dashboard</Link>
-        <span style={{ color: '#2a2a2a' }}>|</span>
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+      <nav className="px-5 py-4 flex items-center gap-3 sticky top-0 z-10" style={{ background: 'var(--bg)', borderBottom: '1px solid #1a1a1a' }}>
+        <Link href="/dashboard/personal" style={{ color: 'var(--text-dim)' }} className="text-sm hover:text-white">← Dashboard</Link>
+        <span style={{ color: 'var(--border)' }}>|</span>
         <span className="font-bold text-white">📊 Relatórios</span>
       </nav>
 
       <main className="max-w-2xl mx-auto px-5 py-6 space-y-3">
-        <p className="text-xs font-medium" style={{ color: '#555' }}>Selecione um aluno para gerar o relatório</p>
+        <p className="text-xs font-medium" style={{ color: 'var(--text-dim)' }}>Selecione um aluno para gerar o relatório</p>
         {(!alunos || alunos.length === 0) ? (
-          <div className="rounded-2xl p-16 text-center" style={{ background: '#141414', border: '1px dashed #2a2a2a' }}>
+          <div className="rounded-2xl p-16 text-center" style={{ background: 'var(--bg-card)', border: '1px dashed #2a2a2a' }}>
             <div className="text-5xl mb-3">📊</div>
-            <p className="text-sm" style={{ color: '#555' }}>Nenhum aluno vinculado</p>
+            <p className="text-sm" style={{ color: 'var(--text-dim)' }}>Nenhum aluno vinculado</p>
           </div>
         ) : alunosInfo.map(aluno => (
-          <div key={aluno.id} className="rounded-2xl p-4 flex items-center justify-between" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+          <div key={aluno.id} className="rounded-2xl p-4 flex items-center justify-between" style={{ background: 'var(--bg-card)', border: '1px solid #2a2a2a' }}>
             <div className="flex items-center gap-3">
               {aluno.avatar_url ? (
                 <img src={aluno.avatar_url} className="w-11 h-11 rounded-full object-cover" style={{ border: '2px solid #f97316' }} />
               ) : (
                 <div className="w-11 h-11 rounded-full flex items-center justify-center font-bold"
-                  style={{ background: 'rgba(249,115,22,0.2)', color: '#f97316' }}>{aluno.nome?.charAt(0).toUpperCase()}</div>
+                  style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}>{aluno.nome?.charAt(0).toUpperCase()}</div>
               )}
               <div>
                 <p className="font-bold text-white">{aluno.nome}</p>
-                <div className="flex gap-3 text-xs mt-0.5" style={{ color: '#444' }}>
+                <div className="flex gap-3 text-xs mt-0.5" style={{ color: 'var(--text-dimmer)' }}>
                   <span>🏋️ {aluno.treinosAtivos} treino{aluno.treinosAtivos !== 1 ? 's' : ''}</span>
                   {aluno.ultimaMedida ? (
                     <span>📅 {new Date(aluno.ultimaMedida.data+'T12:00:00').toLocaleDateString('pt-BR')}</span>
-                  ) : <span style={{ color: '#f97316' }}>⚠️ Sem avaliação</span>}
+                  ) : <span style={{ color: 'var(--accent)' }}>⚠️ Sem avaliação</span>}
                 </div>
               </div>
             </div>
@@ -59,7 +59,7 @@ export default async function RelatoriosPage() {
               </Link>
               <Link href={`/dashboard/personal/alunos/${aluno.id}/relatorio`}
                 className="px-3 py-2 rounded-xl text-xs font-bold text-white"
-                style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)' }}>
+                style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))' }}>
                 📊 Relatório
               </Link>
             </div>

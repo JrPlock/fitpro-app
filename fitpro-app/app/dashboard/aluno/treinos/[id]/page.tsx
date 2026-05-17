@@ -48,41 +48,41 @@ export default function TreinoAlunoDetailPage() {
   const totalSeries = exercicios.reduce((a, ex) => a + ex.series, 0)
   const pct = totalSeries > 0 ? Math.round((totalFeitas / totalSeries) * 100) : 0
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a0a0a' }}><p style={{ color: '#555' }}>Carregando...</p></div>
-  if (!treino) return <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a0a0a' }}><p style={{ color: '#555' }}>Treino não encontrado</p></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}><p style={{ color: 'var(--text-dim)' }}>Carregando...</p></div>
+  if (!treino) return <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}><p style={{ color: 'var(--text-dim)' }}>Treino não encontrado</p></div>
 
   return (
-    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
-      <nav className="px-5 py-4 flex items-center gap-3 sticky top-0 z-10" style={{ background: '#0a0a0a', borderBottom: '1px solid #1a1a1a' }}>
-        <Link href="/dashboard/aluno/treinos" style={{ color: '#555' }} className="text-sm hover:text-white">← Treinos</Link>
-        <span style={{ color: '#2a2a2a' }}>|</span>
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+      <nav className="px-5 py-4 flex items-center gap-3 sticky top-0 z-10" style={{ background: 'var(--bg)', borderBottom: '1px solid #1a1a1a' }}>
+        <Link href="/dashboard/aluno/treinos" style={{ color: 'var(--text-dim)' }} className="text-sm hover:text-white">← Treinos</Link>
+        <span style={{ color: 'var(--border)' }}>|</span>
         <span className="font-bold text-white truncate">{treino.nome}</span>
       </nav>
 
       {timerAtivo && timer !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.85)' }} onClick={() => { setTimerAtivo(false); setTimer(null) }}>
-          <div className="rounded-3xl p-10 text-center" style={{ background: '#141414', border: '1px solid rgba(249,115,22,0.4)' }}>
+          <div className="rounded-3xl p-10 text-center" style={{ background: 'var(--bg-card)', border: '1px solid rgba(249,115,22,0.4)' }}>
             <div className="text-5xl mb-3">⏱️</div>
-            <div className="text-7xl font-extrabold mb-2" style={{ color: '#f97316' }}>{timer}s</div>
-            <p className="text-sm mb-4" style={{ color: '#666' }}>Descansando...</p>
-            <p className="text-xs" style={{ color: '#444' }}>Toque para pular</p>
+            <div className="text-7xl font-extrabold mb-2" style={{ color: 'var(--accent)' }}>{timer}s</div>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Descansando...</p>
+            <p className="text-xs" style={{ color: 'var(--text-dimmer)' }}>Toque para pular</p>
           </div>
         </div>
       )}
 
       <main className="max-w-xl mx-auto px-5 py-6 space-y-4">
-        <div className="rounded-2xl p-5" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+        <div className="rounded-2xl p-5" style={{ background: 'var(--bg-card)', border: '1px solid #2a2a2a' }}>
           <h1 className="font-extrabold text-white text-lg mb-1">{treino.nome}</h1>
-          {treino.objetivo && <span className="text-xs px-2 py-1 rounded-full font-semibold" style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>{treino.objetivo}</span>}
+          {treino.objetivo && <span className="text-xs px-2 py-1 rounded-full font-semibold" style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}>{treino.objetivo}</span>}
           <div className="mt-4">
             <div className="flex justify-between text-sm mb-1.5">
-              <span style={{ color: '#666' }}>Progresso</span>
-              <span className="font-bold" style={{ color: '#f97316' }}>{pct}%</span>
+              <span style={{ color: 'var(--text-muted)' }}>Progresso</span>
+              <span className="font-bold" style={{ color: 'var(--accent)' }}>{pct}%</span>
             </div>
-            <div className="w-full h-3 rounded-full" style={{ background: '#1c1c1c' }}>
-              <div className="h-3 rounded-full transition-all" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #f97316, #ea580c)' }} />
+            <div className="w-full h-3 rounded-full" style={{ background: 'var(--bg-card2)' }}>
+              <div className="h-3 rounded-full transition-all" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, var(--accent), var(--accent-dark))' }} />
             </div>
-            <p className="text-xs mt-1" style={{ color: '#444' }}>{totalFeitas} de {totalSeries} séries</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-dimmer)' }}>{totalFeitas} de {totalSeries} séries</p>
           </div>
         </div>
 
@@ -90,23 +90,23 @@ export default function TreinoAlunoDetailPage() {
           const s = series[ex.id] || []
           const todas = s.every(Boolean)
           return (
-            <div key={ex.id} className="rounded-2xl p-5 transition-all" style={{ background: todas ? 'rgba(249,115,22,0.08)' : '#141414', border: `1px solid ${todas ? 'rgba(249,115,22,0.4)' : '#2a2a2a'}` }}>
+            <div key={ex.id} className="rounded-2xl p-5 transition-all" style={{ background: todas ? 'var(--accent-glow)' : 'var(--bg-card)', border: `1px solid ${todas ? 'var(--accent-glow-strong)' : 'var(--border)'}` }}>
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
-                  style={{ background: todas ? '#f97316' : 'rgba(249,115,22,0.2)', color: todas ? 'white' : '#f97316' }}>
+                  style={{ background: todas ? 'var(--accent)' : 'var(--accent-glow)', color: todas ? 'white' : 'var(--accent)' }}>
                   {todas ? '✓' : i + 1}
                 </div>
                 <div>
                   <p className="font-bold text-white">{ex.nome}</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#555' }}>🔁 {ex.repeticoes} reps · ⏱ {ex.descanso_segundos >= 60 ? `${Math.floor(ex.descanso_segundos/60)}min` : `${ex.descanso_segundos}s`}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>🔁 {ex.repeticoes} reps · ⏱ {ex.descanso_segundos >= 60 ? `${Math.floor(ex.descanso_segundos/60)}min` : `${ex.descanso_segundos}s`}</p>
                 </div>
               </div>
-              {ex.observacoes && <p className="text-xs rounded-lg px-3 py-2 mb-3" style={{ background: '#1c1c1c', color: '#666' }}>💬 {ex.observacoes}</p>}
+              {ex.observacoes && <p className="text-xs rounded-lg px-3 py-2 mb-3" style={{ background: 'var(--bg-card2)', color: 'var(--text-muted)' }}>💬 {ex.observacoes}</p>}
               <div className="flex gap-2">
                 {s.map((feita, si) => (
                   <button key={si} onClick={() => toggleSerie(ex.id, si, ex.descanso_segundos)}
                     className="flex-1 py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.03]"
-                    style={{ background: feita ? 'linear-gradient(135deg, #f97316, #ea580c)' : '#1c1c1c', color: feita ? 'white' : '#555', border: feita ? 'none' : '1px solid #2a2a2a' }}>
+                    style={{ background: feita ? 'linear-gradient(135deg, var(--accent), var(--accent-dark))' : 'var(--bg-card2)', color: feita ? 'white' : 'var(--text-dim)', border: feita ? 'none' : '1px solid #2a2a2a' }}>
                     {feita ? '✓' : `S${si + 1}`}
                   </button>
                 ))}
@@ -116,10 +116,10 @@ export default function TreinoAlunoDetailPage() {
         })}
 
         {pct === 100 && (
-          <div className="rounded-2xl p-8 text-center" style={{ background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.4)' }}>
+          <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--accent-glow)', border: '1px solid rgba(249,115,22,0.4)' }}>
             <div className="text-5xl mb-2">🎉</div>
             <h2 className="text-xl font-extrabold text-white mb-1">Treino concluído!</h2>
-            <p className="text-sm" style={{ color: '#f97316' }}>Parabéns! Você completou todas as séries.</p>
+            <p className="text-sm" style={{ color: 'var(--accent)' }}>Parabéns! Você completou todas as séries.</p>
           </div>
         )}
       </main>

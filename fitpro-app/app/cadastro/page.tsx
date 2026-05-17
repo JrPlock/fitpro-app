@@ -34,16 +34,16 @@ export default function CadastroPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6"
-      style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.1) 0%, #0a0a0a 60%)' }}>
+      style={{ background: 'radial-gradient(ellipse at 50% 0%, var(--accent-glow) 0%, var(--bg) 60%)' }}>
       <div className="w-full max-w-sm space-y-6">
 
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl text-3xl mb-2"
-            style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', boxShadow: '0 0 25px rgba(249,115,22,0.4)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', boxShadow: '0 0 25px rgba(249,115,22,0.4)' }}>
             💪
           </div>
           <h1 className="text-2xl font-extrabold text-white">Criar conta</h1>
-          <p className="text-sm" style={{ color: '#666' }}>Comece gratuitamente hoje</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Comece gratuitamente hoje</p>
         </div>
 
         {/* Role selector */}
@@ -55,9 +55,9 @@ export default function CadastroPage() {
             <button key={r.value} onClick={() => setRole(r.value)}
               className="p-4 rounded-2xl text-center transition-all"
               style={{
-                background: role === r.value ? 'rgba(249,115,22,0.15)' : '#141414',
-                border: `1px solid ${role === r.value ? '#f97316' : '#2a2a2a'}`,
-                color: role === r.value ? '#f97316' : '#666'
+                background: role === r.value ? 'var(--accent-glow)' : 'var(--bg-card)',
+                border: `1px solid ${role === r.value ? 'var(--accent)' : 'var(--border)'}`,
+                color: role === r.value ? 'var(--accent)' : 'var(--text-muted)'
               }}>
               <div className="text-2xl mb-1">{r.icon}</div>
               <div className="text-xs font-semibold">{r.label}</div>
@@ -72,12 +72,12 @@ export default function CadastroPage() {
             { label: 'SENHA', value: senha, set: setSenha, type: 'password', placeholder: 'Mínimo 6 caracteres' },
           ].map(f => (
             <div key={f.label}>
-              <label className="block text-xs font-semibold mb-2" style={{ color: '#888' }}>{f.label}</label>
+              <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>{f.label}</label>
               <input type={f.type} value={f.value} onChange={e => f.set(e.target.value)}
                 placeholder={f.placeholder} className={inputCls}
-                style={{ background: '#1c1c1c', border: '1px solid #2a2a2a' }}
-                onFocus={e => e.target.style.borderColor = '#f97316'}
-                onBlur={e => e.target.style.borderColor = '#2a2a2a'} />
+                style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a' }}
+                onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+                onBlur={e => e.target.style.borderColor = 'var(--border)'} />
             </div>
           ))}
 
@@ -85,14 +85,14 @@ export default function CadastroPage() {
 
           <button onClick={handleCadastro} disabled={loading}
             className="w-full py-3.5 rounded-xl font-bold text-white transition-all hover:scale-[1.02] disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', boxShadow: '0 0 20px rgba(249,115,22,0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', boxShadow: '0 0 20px rgba(249,115,22,0.3)' }}>
             {loading ? 'Criando conta...' : 'Criar conta'}
           </button>
         </div>
 
-        <p className="text-center text-sm" style={{ color: '#555' }}>
+        <p className="text-center text-sm" style={{ color: 'var(--text-dim)' }}>
           Já tem conta?{' '}
-          <Link href="/login" className="font-semibold" style={{ color: '#f97316' }}>Entrar</Link>
+          <Link href="/login" className="font-semibold" style={{ color: 'var(--accent)' }}>Entrar</Link>
         </p>
       </div>
     </main>

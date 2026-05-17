@@ -24,18 +24,18 @@ export default async function DashboardPersonal() {
 
       {/* Boas-vindas */}
       <div className="rounded-2xl p-5"
-        style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #141414 100%)', border: '1px solid #2a2a2a' }}>
+        style={{ background: 'linear-gradient(135deg, var(--bg-card2) 0%, var(--bg-card) 100%)', border: '1px solid #2a2a2a' }}>
         <div className="flex items-center gap-3 mb-5">
           {profile?.avatar_url ? (
             <img src={profile.avatar_url} className="w-12 h-12 rounded-full object-cover" style={{ border: '2px solid #f97316' }} />
           ) : (
             <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg"
-              style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', color: 'white' }}>
+              style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', color: 'white' }}>
               {firstName.charAt(0)}
             </div>
           )}
           <div>
-            <p className="text-sm" style={{ color: '#888' }}>{saudacao()},</p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{saudacao()},</p>
             <p className="text-xl font-extrabold text-white">{firstName}</p>
           </div>
         </div>
@@ -46,9 +46,9 @@ export default async function DashboardPersonal() {
             { label: 'treinos criados', value: treinos?.length || 0 },
             { label: 'avaliações', value: medidas?.length || 0 },
           ].map(s => (
-            <div key={s.label} className="rounded-xl p-3" style={{ background: '#0f0f0f' }}>
+            <div key={s.label} className="rounded-xl p-3" style={{ background: 'var(--bg)' }}>
               <p className="text-3xl font-extrabold text-white">{s.value}</p>
-              <p className="text-xs mt-0.5" style={{ color: '#555' }}>{s.label}</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>{s.label}</p>
             </div>
           ))}
         </div>
@@ -58,30 +58,30 @@ export default async function DashboardPersonal() {
       <div className="grid grid-cols-2 gap-3">
         <Link href="/dashboard/personal/alunos/adicionar"
           className="rounded-2xl p-4 flex items-center gap-3 transition-all hover:scale-[1.02]"
-          style={{ background: '#1c1c1c', border: '1px solid #2a2a2a' }}>
+          style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a' }}>
           <span className="text-2xl">👤</span>
           <span className="font-semibold text-white text-sm">Adicionar Aluno</span>
         </Link>
         <Link href="/dashboard/personal/treinos/novo"
           className="rounded-2xl p-4 flex items-center gap-3 transition-all hover:scale-[1.02]"
-          style={{ background: '#1c1c1c', border: '1px solid #2a2a2a' }}>
+          style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a' }}>
           <span className="text-2xl">📋</span>
           <span className="font-semibold text-white text-sm">Novo Treino</span>
         </Link>
       </div>
 
       {/* Alunos recentes */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-card)', border: '1px solid #2a2a2a' }}>
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #1f1f1f' }}>
           <span className="font-bold text-white">Seus alunos</span>
-          <Link href="/dashboard/personal/alunos" className="text-xs font-semibold" style={{ color: '#f97316' }}>Ver todos →</Link>
+          <Link href="/dashboard/personal/alunos" className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>Ver todos →</Link>
         </div>
         {(!alunos || alunos.length === 0) ? (
           <div className="text-center py-10">
-            <p className="text-sm" style={{ color: '#555' }}>Nenhum aluno vinculado ainda</p>
+            <p className="text-sm" style={{ color: 'var(--text-dim)' }}>Nenhum aluno vinculado ainda</p>
             <Link href="/dashboard/personal/alunos/adicionar"
               className="inline-block mt-3 px-4 py-2 rounded-xl text-sm font-semibold"
-              style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316', border: '1px solid rgba(249,115,22,0.3)' }}>
+              style={{ background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid rgba(249,115,22,0.3)' }}>
               + Adicionar aluno
             </Link>
           </div>
@@ -94,16 +94,16 @@ export default async function DashboardPersonal() {
                 <img src={aluno.avatar_url} className="w-9 h-9 rounded-full object-cover" />
               ) : (
                 <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
-                  style={{ background: 'rgba(249,115,22,0.2)', color: '#f97316' }}>
+                  style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}>
                   {aluno.nome?.charAt(0).toUpperCase()}
                 </div>
               )}
               <div>
                 <p className="text-sm font-semibold text-white">{aluno.nome}</p>
-                <p className="text-xs" style={{ color: '#555' }}>{aluno.email}</p>
+                <p className="text-xs" style={{ color: 'var(--text-dim)' }}>{aluno.email}</p>
               </div>
             </div>
-            <span style={{ color: '#f97316' }}>›</span>
+            <span style={{ color: 'var(--accent)' }}>›</span>
           </Link>
         ))}
       </div>

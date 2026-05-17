@@ -20,33 +20,33 @@ export default async function AvaliacoesPersonalPage() {
   const comAval = alunosComMedidas.filter(a => a.ultima).sort((a,b) => (b.dias??0)-(a.dias??0))
 
   return (
-    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
-      <nav className="px-5 py-4 flex items-center gap-3 sticky top-0 z-10" style={{ background: '#0a0a0a', borderBottom: '1px solid #1a1a1a' }}>
-        <Link href="/dashboard/personal" style={{ color: '#555' }} className="text-sm hover:text-white">← Dashboard</Link>
-        <span style={{ color: '#2a2a2a' }}>|</span>
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+      <nav className="px-5 py-4 flex items-center gap-3 sticky top-0 z-10" style={{ background: 'var(--bg)', borderBottom: '1px solid #1a1a1a' }}>
+        <Link href="/dashboard/personal" style={{ color: 'var(--text-dim)' }} className="text-sm hover:text-white">← Dashboard</Link>
+        <span style={{ color: 'var(--border)' }}>|</span>
         <span className="font-bold text-white">📏 Avaliações</span>
       </nav>
 
       <main className="max-w-2xl mx-auto px-5 py-6 space-y-4">
         {(!alunos || alunos.length === 0) ? (
-          <div className="rounded-2xl p-16 text-center" style={{ background: '#141414', border: '1px dashed #2a2a2a' }}>
+          <div className="rounded-2xl p-16 text-center" style={{ background: 'var(--bg-card)', border: '1px dashed #2a2a2a' }}>
             <div className="text-5xl mb-3">📏</div>
-            <p className="text-sm" style={{ color: '#555' }}>Nenhum aluno vinculado ainda</p>
+            <p className="text-sm" style={{ color: 'var(--text-dim)' }}>Nenhum aluno vinculado ainda</p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-3 gap-3">
               {[['Total', alunos.length, '👥'], ['Com avaliação', comAval.length, '✅'], ['Sem avaliação', semAval.length, '⚠️']].map(([l,v,i]) => (
-                <div key={l as string} className="rounded-2xl p-4 text-center" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+                <div key={l as string} className="rounded-2xl p-4 text-center" style={{ background: 'var(--bg-card)', border: '1px solid #2a2a2a' }}>
                   <div className="text-xl mb-1">{i}</div>
                   <div className="text-2xl font-extrabold text-white">{v}</div>
-                  <div className="text-xs mt-0.5" style={{ color: '#555' }}>{l}</div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>{l}</div>
                 </div>
               ))}
             </div>
 
             {semAval.length > 0 && (
-              <div className="rounded-2xl overflow-hidden" style={{ background: '#141414', border: '1px solid rgba(251,146,60,0.3)' }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-card)', border: '1px solid rgba(251,146,60,0.3)' }}>
                 <div className="px-5 py-3" style={{ background: 'rgba(251,146,60,0.08)', borderBottom: '1px solid rgba(251,146,60,0.2)' }}>
                   <p className="font-bold text-sm" style={{ color: '#fb923c' }}>⚠️ Sem nenhuma avaliação</p>
                 </div>
@@ -59,14 +59,14 @@ export default async function AvaliacoesPersonalPage() {
                         style={{ background: 'rgba(251,146,60,0.15)', color: '#fb923c' }}>{a.nome?.charAt(0).toUpperCase()}</div>
                       <p className="font-medium text-white text-sm">{a.nome}</p>
                     </div>
-                    <span style={{ color: '#f97316' }}>›</span>
+                    <span style={{ color: 'var(--accent)' }}>›</span>
                   </Link>
                 ))}
               </div>
             )}
 
             {comAval.length > 0 && (
-              <div className="rounded-2xl overflow-hidden" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-card)', border: '1px solid #2a2a2a' }}>
                 <div className="px-5 py-3" style={{ borderBottom: '1px solid #1f1f1f' }}>
                   <p className="font-bold text-white text-sm">📋 Histórico</p>
                 </div>
@@ -79,22 +79,22 @@ export default async function AvaliacoesPersonalPage() {
                           <img src={a.avatar_url} className="w-9 h-9 rounded-full object-cover" />
                         ) : (
                           <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
-                            style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>{a.nome?.charAt(0).toUpperCase()}</div>
+                            style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}>{a.nome?.charAt(0).toUpperCase()}</div>
                         )}
                         <div>
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-white text-sm">{a.nome}</p>
-                            {(a.dias??0) > 30 && <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(248,113,113,0.15)', color: '#f87171' }}>+30 dias</span>}
+                            {(a.dias??0) > 30 && <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(248,113,113,0.15)', color: 'var(--danger)' }}>+30 dias</span>}
                           </div>
-                          <p className="text-xs" style={{ color: '#444' }}>Há {a.dias} dias · {a.total} avaliações</p>
+                          <p className="text-xs" style={{ color: 'var(--text-dimmer)' }}>Há {a.dias} dias · {a.total} avaliações</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="text-right">
                           {a.ultima.peso && <p className="text-sm font-bold text-white">{a.ultima.peso}kg</p>}
-                          {varP && <p className="text-xs font-bold" style={{ color: parseFloat(varP)<0 ? '#4ade80' : '#f87171' }}>{parseFloat(varP)>0?'+':''}{varP}kg</p>}
+                          {varP && <p className="text-xs font-bold" style={{ color: parseFloat(varP)<0 ? 'var(--success)' : 'var(--danger)' }}>{parseFloat(varP)>0?'+':''}{varP}kg</p>}
                         </div>
-                        <Link href={`/dashboard/personal/alunos/${a.id}/avaliacoes`} className="text-xs font-bold" style={{ color: '#f97316' }}>Ver →</Link>
+                        <Link href={`/dashboard/personal/alunos/${a.id}/avaliacoes`} className="text-xs font-bold" style={{ color: 'var(--accent)' }}>Ver →</Link>
                       </div>
                     </div>
                   )

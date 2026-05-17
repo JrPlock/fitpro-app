@@ -18,20 +18,20 @@ export default function DesvincularButton({ alunoId, alunoNome }: { alunoId: str
 
   if (confirmando) return (
     <div className="flex items-center gap-2">
-      <span className="text-xs" style={{ color: '#666' }}>Desvincular?</span>
+      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Desvincular?</span>
       <button onClick={desvincular} disabled={loading}
         className="px-3 py-1.5 rounded-lg text-xs font-bold text-white disabled:opacity-50"
         style={{ background: '#dc2626' }}>{loading ? '...' : 'Sim'}</button>
       <button onClick={() => setConfirmando(false)}
         className="px-3 py-1.5 rounded-lg text-xs font-bold"
-        style={{ background: '#1c1c1c', border: '1px solid #2a2a2a', color: '#888' }}>Não</button>
+        style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a', color: 'var(--text-muted)' }}>Não</button>
     </div>
   )
 
   return (
     <button onClick={() => setConfirmando(true)}
       className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-105"
-      style={{ background: '#1c1c1c', border: '1px solid #3a1515', color: '#f87171' }}>
+      style={{ background: 'var(--bg-card2)', border: '1px solid #3a1515', color: 'var(--danger)' }}>
       Desvincular
     </button>
   )
