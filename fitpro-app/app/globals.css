@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 /* ================================
-   TEMA DARK (padrão)
+   TEMA DARK (padrao)
 ================================ */
 [data-theme="dark"], :root {
   --bg: #0a0a0a;
   --bg-card: #141414;
   --bg-card2: #1c1c1c;
   --bg-sidebar: #0d0d0d;
-  --border: #2a2a2a;
-  --border-sidebar: #1f1f1f;
+  --border: #343434;
+  --border-sidebar: #282828;
   --accent: #f97316;
   --accent-dark: #ea580c;
   --accent-glow: rgba(249,115,22,0.15);
   --accent-glow-strong: rgba(249,115,22,0.3);
   --text: #ffffff;
-  --text-muted: #888888;
-  --text-dim: #555555;
-  --text-dimmer: #333333;
-  --hover: rgba(255,255,255,0.05);
+  --text-muted: #b3b3b3;
+  --text-dim: #858585;
+  --text-dimmer: #666666;
+  --hover: rgba(255,255,255,0.06);
   --danger: #f87171;
   --danger-bg: #1a0a0a;
   --danger-border: #3a1515;
@@ -29,25 +29,25 @@
    TEMA LIGHT
 ================================ */
 [data-theme="light"] {
-  --bg: #f5f5f5;
+  --bg: #f3f4f6;
   --bg-card: #ffffff;
-  --bg-card2: #f0f0f0;
+  --bg-card2: #eef1f5;
   --bg-sidebar: #ffffff;
-  --border: #e5e7eb;
-  --border-sidebar: #e5e7eb;
+  --border: #cbd5e1;
+  --border-sidebar: #d1d5db;
   --accent: #f97316;
-  --accent-dark: #ea580c;
-  --accent-glow: rgba(249,115,22,0.1);
+  --accent-dark: #c2410c;
+  --accent-glow: rgba(249,115,22,0.14);
   --accent-glow-strong: rgba(249,115,22,0.25);
-  --text: #111111;
-  --text-muted: #6b7280;
-  --text-dim: #9ca3af;
-  --text-dimmer: #d1d5db;
-  --hover: rgba(0,0,0,0.04);
-  --danger: #dc2626;
+  --text: #0f172a;
+  --text-muted: #334155;
+  --text-dim: #475569;
+  --text-dimmer: #64748b;
+  --hover: rgba(15,23,42,0.06);
+  --danger: #b91c1c;
   --danger-bg: #fef2f2;
-  --danger-border: #fecaca;
-  --success: #16a34a;
+  --danger-border: #fca5a5;
+  --success: #15803d;
 }
 
 /* ================================
@@ -58,17 +58,17 @@
   --bg-card: #0d1b35;
   --bg-card2: #122040;
   --bg-sidebar: #080f22;
-  --border: #1e3a6e;
-  --border-sidebar: #152d55;
+  --border: #2b4f8a;
+  --border-sidebar: #244574;
   --accent: #3b82f6;
   --accent-dark: #2563eb;
   --accent-glow: rgba(59,130,246,0.15);
   --accent-glow-strong: rgba(59,130,246,0.3);
   --text: #ffffff;
-  --text-muted: #7ea8d4;
-  --text-dim: #4a7ab5;
-  --text-dimmer: #2d5a8e;
-  --hover: rgba(59,130,246,0.06);
+  --text-muted: #c1dcff;
+  --text-dim: #94c2fb;
+  --text-dimmer: #6fa3e4;
+  --hover: rgba(59,130,246,0.08);
   --danger: #f87171;
   --danger-bg: #1a0a0a;
   --danger-border: #3a1515;
@@ -84,4 +84,34 @@ body {
   background-color: var(--bg);
   color: var(--text);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+input,
+select,
+textarea {
+  color: var(--text);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-dimmer);
+}
+
+[data-theme="light"] h1.text-white,
+[data-theme="light"] h2.text-white,
+[data-theme="light"] h3.text-white,
+[data-theme="light"] p.text-white,
+[data-theme="light"] span.text-white,
+[data-theme="light"] div.text-white,
+[data-theme="light"] strong.text-white,
+[data-theme="light"] label.text-white {
+  color: var(--text) !important;
+}
+
+[data-theme="light"] .hover\:text-white:hover {
+  color: var(--text) !important;
+}
+
+[data-theme="light"] .hover\:bg-white\/5:hover {
+  background-color: var(--hover) !important;
 }
