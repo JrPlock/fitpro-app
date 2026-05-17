@@ -260,6 +260,13 @@ export default function NovoTreinoPage() {
                   placeholder="Ex: Foco na descida controlada"
                   className={inputCls} style={fieldStyle} />
               </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>VÍDEO OU GIF</label>
+                <input type="url" value={ex.video_url} onChange={e => updateEx(i, 'video_url', e.target.value)}
+                  placeholder="https://exemplo.com/exercicio.gif"
+                  className={inputCls} style={fieldStyle} />
+                <p className="text-xs mt-1.5" style={{ color: 'var(--text-dim)' }}>Cole um link de vídeo, GIF ou demonstração do exercício.</p>
+              </div>
             </div>
           ))}
 
