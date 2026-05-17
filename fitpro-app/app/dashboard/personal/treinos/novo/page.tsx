@@ -26,7 +26,8 @@ type ExercicioField = {
   placeholder: string
 }
 
-const inputCls = "w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all"
+const inputCls = "w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
+const fieldStyle = { background: 'var(--bg-card2)', border: '1px solid var(--border)', color: 'var(--text)' }
 
 const exercicioFields: ExercicioField[] = [
   { label: 'SÉRIES', campo: 'series', type: 'number', placeholder: '3' },
@@ -42,11 +43,18 @@ const novoExercicio = (): Exercicio => ({
   observacoes: '',
 })
 
+function dateOffset(days: number) {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return date.toISOString().slice(0, 10)
+}
+
 export default function NovoTreinoPage() {
   const [nome, setNome] = useState('')
   const [descricao, setDescricao] = useState('')
   const [objetivo, setObjetivo] = useState('')
   const [alunoId, setAlunoId] = useState('')
+  const [dataVencimento, setDataVencimento] = useState(() => dateOffset(45))
   const [alunos, setAlunos] = useState<Aluno[]>([])
   const [exercicios, setExercicios] = useState<Exercicio[]>([novoExercicio()])
   const [loading, setLoading] = useState(false)
@@ -95,6 +103,7 @@ export default function NovoTreinoPage() {
   async function salvar() {
     if (!nome.trim()) { setErro('Dê um nome ao treino.'); return }
     if (!alunoId) { setErro('Selecione um aluno para este treino.'); return }
+    if (!dataVencimento) { setErro('Informe a data de revisão do treino.'); return }
     if (exercicios.some(e => !e.nome.trim())) { setErro('Preencha o nome de todos os exercícios.'); return }
 
     setLoading(true)
@@ -109,7 +118,14 @@ export default function NovoTreinoPage() {
 
     const { data: treino, error } = await supabase
       .from('treinos')
-      .insert({ nome: nome.trim(), descricao, objetivo, personal_id: user.id, aluno_id: alunoId })
+      .insert({
+        nome: nome.trim(),
+        descricao,
+        objetivo,
+        data_vencimento: dataVencimento,
+        personal_id: user.id,
+        aluno_id: alunoId,
+      })
       .select()
       .single()
 
@@ -134,7 +150,7 @@ export default function NovoTreinoPage() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
-      <nav className="px-5 py-4 flex items-center justify-between sticky top-0 z-10" style={{ background: 'var(--bg)', borderBottom: '1px solid #1a1a1a' }}>
+      <nav className="px-5 py-4 flex items-center justify-between sticky top-0 z-10" style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center gap-3">
           <Link href="/dashboard/personal/treinos" style={{ color: 'var(--text-dim)' }} className="text-sm hover:text-white">← Treinos</Link>
           <span style={{ color: 'var(--border)' }}>|</span>
@@ -148,20 +164,20 @@ export default function NovoTreinoPage() {
       </nav>
 
       <main className="max-w-2xl mx-auto px-5 py-6 space-y-4">
-        {erro && <div className="text-xs rounded-xl px-4 py-3" style={{ background: 'var(--danger-bg)', border: '1px solid #3a1515', color: 'var(--danger)' }}>{erro}</div>}
+        {erro && <div className="text-xs rounded-xl px-4 py-3" style={{ background: 'var(--danger-bg)', border: '1px solid var(--danger-border)', color: 'var(--danger)' }}>{erro}</div>}
 
-        <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--bg-card)', border: '1px solid #2a2a2a' }}>
+        <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
           <h2 className="font-bold text-white">Informações do treino</h2>
           <div>
             <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>NOME DO TREINO *</label>
             <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Treino A - Peito e Tríceps"
-              className={inputCls} style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a' }} />
+              className={inputCls} style={fieldStyle} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>OBJETIVO</label>
               <select value={objetivo} onChange={e => setObjetivo(e.target.value)}
-                className={inputCls} style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a' }}>
+                className={inputCls} style={fieldStyle}>
                 <option value="">Selecione...</option>
                 {['Hipertrofia', 'Emagrecimento', 'Resistência', 'Força', 'Condicionamento'].map(o => <option key={o}>{o}</option>)}
               </select>
@@ -169,16 +185,22 @@ export default function NovoTreinoPage() {
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>ALUNO *</label>
               <select value={alunoId} onChange={e => setAlunoId(e.target.value)}
-                className={inputCls} style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a' }}>
+                className={inputCls} style={fieldStyle}>
                 <option value="">Selecione um aluno</option>
                 {alunos.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
               </select>
             </div>
           </div>
           <div>
+            <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>REVISAR/TROCAR ATÉ *</label>
+            <input type="date" value={dataVencimento} onChange={e => setDataVencimento(e.target.value)}
+              className={inputCls} style={fieldStyle} />
+            <p className="text-xs mt-1.5" style={{ color: 'var(--text-dim)' }}>Use essa data para lembrar a troca do treino conforme a evolução do aluno.</p>
+          </div>
+          <div>
             <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>OBSERVAÇÕES</label>
             <textarea value={descricao} onChange={e => setDescricao(e.target.value)} rows={2}
-              className={inputCls + ' resize-none'} style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a' }} />
+              className={inputCls + ' resize-none'} style={fieldStyle} />
           </div>
         </div>
 
@@ -189,7 +211,7 @@ export default function NovoTreinoPage() {
           </div>
 
           {exercicios.map((ex, i) => (
-            <div key={i} className="rounded-2xl p-4 space-y-3" style={{ background: 'var(--bg-card)', border: '1px solid #2a2a2a' }}>
+            <div key={i} className="rounded-2xl p-4 space-y-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}>Exercício {i + 1}</span>
                 {exercicios.length > 1 && <button onClick={() => removeEx(i)} className="text-xs" style={{ color: 'var(--danger)' }}>Remover</button>}
@@ -197,7 +219,7 @@ export default function NovoTreinoPage() {
               <div>
                 <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>NOME *</label>
                 <input value={ex.nome} onChange={e => updateEx(i, 'nome', e.target.value)} placeholder="Ex: Supino reto com barra"
-                  className={inputCls} style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a' }} />
+                  className={inputCls} style={fieldStyle} />
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {exercicioFields.map(({ label, campo, type, placeholder }) => (
@@ -205,7 +227,7 @@ export default function NovoTreinoPage() {
                     <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>{label}</label>
                     <input type={type} value={ex[campo]} placeholder={placeholder}
                       onChange={e => updateEx(i, campo, type === 'number' ? Number(e.target.value) : e.target.value)}
-                      className={inputCls} style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a' }} />
+                      className={inputCls} style={fieldStyle} />
                   </div>
                 ))}
               </div>
@@ -213,14 +235,14 @@ export default function NovoTreinoPage() {
                 <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>OBSERVAÇÕES</label>
                 <input value={ex.observacoes} onChange={e => updateEx(i, 'observacoes', e.target.value)}
                   placeholder="Ex: Foco na descida controlada"
-                  className={inputCls} style={{ background: 'var(--bg-card2)', border: '1px solid #2a2a2a' }} />
+                  className={inputCls} style={fieldStyle} />
               </div>
             </div>
           ))}
 
           <button onClick={addEx}
             className="w-full py-4 rounded-2xl text-sm font-bold transition-all hover:scale-[1.01]"
-            style={{ border: '1px dashed #2a2a2a', color: 'var(--accent)', background: 'transparent' }}>
+            style={{ border: '1px dashed var(--border)', color: 'var(--accent)', background: 'transparent' }}>
             + Adicionar exercício
           </button>
         </div>

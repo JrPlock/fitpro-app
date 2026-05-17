@@ -9,6 +9,14 @@ type PacoteAluno = {
   status: 'ativo' | 'pausado' | 'cancelado'
 }
 
+type TreinoResumo = {
+  id: string
+  nome: string
+  aluno_id: string
+  data_vencimento: string | null
+  profiles?: { nome: string | null } | { nome: string | null }[] | null
+}
+
 const tipoLabels: Record<PacoteAluno['tipo_atendimento'], string> = {
   presencial: 'Presencial',
   online: 'Online',
@@ -25,6 +33,12 @@ function diasAte(date: string) {
   today.setHours(0, 0, 0, 0)
   const target = new Date(`${date}T00:00:00`)
   return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+function dateOffset(days: number) {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return date.toISOString().slice(0, 10)
 }
 
 function packageBadge(pacote?: PacoteAluno) {
@@ -69,6 +83,43 @@ function packageBadge(pacote?: PacoteAluno) {
   }
 }
 
+function trainingBadge(treino: TreinoResumo) {
+  if (!treino.data_vencimento) {
+    return {
+      label: 'Sem revisão',
+      detail: 'defina uma data',
+      bg: 'var(--bg-card2)',
+      color: 'var(--text-dimmer)',
+      border: 'var(--border)',
+    }
+  }
+
+  const diff = diasAte(treino.data_vencimento)
+
+  if (diff < 0) {
+    return {
+      label: 'Trocar treino',
+      detail: `vencido há ${Math.abs(diff)} dia${Math.abs(diff) === 1 ? '' : 's'}`,
+      bg: 'var(--danger-bg)',
+      color: 'var(--danger)',
+      border: 'var(--danger-border)',
+    }
+  }
+
+  return {
+    label: diff === 0 ? 'Revisar hoje' : 'Revisar em breve',
+    detail: diff === 0 ? 'vence hoje' : `faltam ${diff} dia${diff === 1 ? '' : 's'}`,
+    bg: 'var(--accent-glow)',
+    color: 'var(--accent)',
+    border: 'rgba(249,115,22,0.3)',
+  }
+}
+
+function profileName(profile: TreinoResumo['profiles']) {
+  if (Array.isArray(profile)) return profile[0]?.nome
+  return profile?.nome
+}
+
 export default async function DashboardPersonal() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -83,13 +134,30 @@ export default async function DashboardPersonal() {
     .eq('personal_id', user.id)
     .eq('status', 'ativo')
 
+  const { data: treinosParaRevisar } = await supabase
+    .from('treinos')
+    .select('id, nome, aluno_id, data_vencimento, profiles!treinos_aluno_id_fkey(nome)')
+    .eq('personal_id', user.id)
+    .eq('ativo', true)
+    .not('data_vencimento', 'is', null)
+    .lte('data_vencimento', dateOffset(7))
+    .order('data_vencimento', { ascending: true })
+    .limit(5)
+
   const pacotePorAluno = new Map((pacotes as PacoteAluno[] | null)?.map(p => [p.aluno_id, p]) || [])
+  const treinosRevisao = (treinosParaRevisar as unknown as TreinoResumo[] | null) || []
   const vencidos = (pacotes as PacoteAluno[] | null)?.filter(p => diasAte(p.data_vencimento) < 0).length || 0
   const vencendo = (pacotes as PacoteAluno[] | null)?.filter(p => {
     const diff = diasAte(p.data_vencimento)
     return diff >= 0 && diff <= 5
   }).length || 0
   const firstName = profile?.nome?.split(' ')[0] || 'Personal'
+  const treinosVencidos = treinosRevisao.filter(t => t.data_vencimento && diasAte(t.data_vencimento) < 0).length
+  const treinosVencendo = treinosRevisao.filter(t => {
+    if (!t.data_vencimento) return false
+    const diff = diasAte(t.data_vencimento)
+    return diff >= 0 && diff <= 7
+  }).length
 
   return (
     <div className="px-5 py-6 space-y-5 max-w-5xl mx-auto">
@@ -123,6 +191,40 @@ export default async function DashboardPersonal() {
           ))}
         </div>
       </div>
+
+      {treinosRevisao.length > 0 && (
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
+            <div>
+              <p className="font-bold text-white">Revisão de treinos</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-dim)' }}>
+                {treinosVencidos} vencido{treinosVencidos === 1 ? '' : 's'} · {treinosVencendo} vencendo em 7 dias
+              </p>
+            </div>
+            <Link href="/dashboard/personal/treinos" className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>Ver treinos →</Link>
+          </div>
+          {treinosRevisao.map(treino => {
+            const badge = trainingBadge(treino)
+
+            return (
+              <Link key={treino.id} href={`/dashboard/personal/treinos/${treino.id}`}
+                className="flex items-center justify-between gap-3 px-5 py-3.5 transition-all hover:bg-white/5"
+                style={{ borderBottom: '1px solid var(--border)' }}>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{treino.nome}</p>
+                  <p className="text-xs truncate" style={{ color: 'var(--text-dim)' }}>
+                    {profileName(treino.profiles) || 'Aluno'} · {badge.detail}
+                  </p>
+                </div>
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0"
+                  style={{ background: badge.bg, color: badge.color, border: `1px solid ${badge.border}` }}>
+                  {badge.label}
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <Link href="/dashboard/personal/alunos/adicionar"

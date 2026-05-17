@@ -24,6 +24,7 @@ CREATE TABLE treinos (
   descricao TEXT,
   objetivo TEXT,
   ativo BOOLEAN DEFAULT true,
+  data_vencimento DATE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
