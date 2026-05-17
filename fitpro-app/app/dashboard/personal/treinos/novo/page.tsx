@@ -57,7 +57,7 @@ export default function NovoTreinoPage() {
   const [descricao, setDescricao] = useState('')
   const [objetivo, setObjetivo] = useState('')
   const [alunoId, setAlunoId] = useState('')
-  const [dataVencimento, setDataVencimento] = useState(() => dateOffset(45))
+  const [dataVencimento, setDataVencimento] = useState('')
   const [alunos, setAlunos] = useState<Aluno[]>([])
   const [exercicios, setExercicios] = useState<Exercicio[]>([novoExercicio()])
   const [loading, setLoading] = useState(false)
@@ -139,7 +139,7 @@ export default function NovoTreinoPage() {
       .single()
 
     if (error || !treino) {
-      setErro('Erro ao salvar o treino.')
+      setErro(error?.message || 'Erro ao salvar o treino.')
       setLoading(false)
       return
     }
@@ -149,7 +149,7 @@ export default function NovoTreinoPage() {
       .insert(exercicios.map((ex, i) => ({ ...ex, nome: ex.nome.trim(), treino_id: treino.id, ordem: i })))
 
     if (exerciciosError) {
-      setErro('Treino criado, mas não foi possível salvar os exercícios.')
+      setErro(exerciciosError.message || 'Treino criado, mas não foi possível salvar os exercícios.')
       setLoading(false)
       return
     }
@@ -201,7 +201,14 @@ export default function NovoTreinoPage() {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>REVISAR/TROCAR ATÉ *</label>
+            <div className="flex items-center justify-between gap-3 mb-1.5">
+              <label className="block text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>REVISAR/TROCAR ATÉ *</label>
+              <button type="button" onClick={() => setDataVencimento(dateOffset(45))}
+                className="text-xs font-semibold"
+                style={{ color: 'var(--accent)' }}>
+                usar 45 dias
+              </button>
+            </div>
             <input type="date" value={dataVencimento} onChange={e => setDataVencimento(e.target.value)}
               className={inputCls} style={fieldStyle} />
             <p className="text-xs mt-1.5" style={{ color: 'var(--text-dim)' }}>Use essa data para lembrar a troca do treino conforme a evolução do aluno.</p>
