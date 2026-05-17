@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { EXERCISE_GROUPS, EXERCISE_LIBRARY } from '@/lib/exerciseLibrary'
 
 interface Exercicio {
   nome: string
@@ -11,6 +12,7 @@ interface Exercicio {
   repeticoes: string
   descanso_segundos: number
   observacoes: string
+  video_url: string
 }
 
 interface Aluno {
@@ -41,6 +43,7 @@ const novoExercicio = (): Exercicio => ({
   repeticoes: '10-12',
   descanso_segundos: 60,
   observacoes: '',
+  video_url: '',
 })
 
 function dateOffset(days: number) {
@@ -98,6 +101,12 @@ export default function NovoTreinoPage() {
       next[i] = { ...next[i], [campo]: val }
       return next
     })
+  }
+
+  function selectExercise(i: number, exerciseName: string) {
+    const exercise = EXERCISE_LIBRARY.find(item => item.name === exerciseName)
+    updateEx(i, 'nome', exerciseName)
+    updateEx(i, 'video_url', exercise?.gifUrl || '')
   }
 
   async function salvar() {
@@ -215,6 +224,20 @@ export default function NovoTreinoPage() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}>Exercício {i + 1}</span>
                 {exercicios.length > 1 && <button onClick={() => removeEx(i)} className="text-xs" style={{ color: 'var(--danger)' }}>Remover</button>}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>BIBLIOTECA</label>
+                <select value={EXERCISE_LIBRARY.some(item => item.name === ex.nome) ? ex.nome : ''} onChange={e => selectExercise(i, e.target.value)}
+                  className={inputCls} style={fieldStyle}>
+                  <option value="">Selecionar exercício...</option>
+                  {EXERCISE_GROUPS.map(group => (
+                    <optgroup key={group} label={group}>
+                      {EXERCISE_LIBRARY.filter(item => item.group === group).map(item => (
+                        <option key={item.name} value={item.name}>{item.name}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>NOME *</label>
