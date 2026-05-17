@@ -1,4 +1,3 @@
-import PrintButton from './PrintButton'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -38,7 +37,10 @@ export default async function RelatorioAlunoPage({ params }: { params: Promise<{
           <span className="text-gray-300">|</span>
           <span className="font-bold text-gray-900">📊 Relatório — {aluno.nome}</span>
         </div>
-        <PrintButton />
+        <button onClick={() => window.print()}
+          className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-700 transition-colors">
+          🖨️ Imprimir
+        </button>
       </nav>
 
       <main className="max-w-3xl mx-auto p-6 space-y-6 print:p-0">

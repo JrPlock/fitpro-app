@@ -46,6 +46,7 @@ export default function CadastroPage() {
           <p className="text-sm" style={{ color: '#666' }}>Comece gratuitamente hoje</p>
         </div>
 
+        {/* Role selector */}
         <div className="grid grid-cols-2 gap-3">
           {([
             { value: 'personal', label: 'Personal Trainer', icon: '🏅' },

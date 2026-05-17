@@ -9,13 +9,7 @@ export default async function AlunoPerfilPage({ params }: { params: Promise<{ id
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: aluno } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', id)
-    .eq('personal_id', user.id)
-    .single()
-
+  const { data: aluno } = await supabase.from('profiles').select('*').eq('id', id).eq('personal_id', user.id).single()
   if (!aluno) redirect('/dashboard/personal/alunos')
 
   const [{ data: treinos }, { data: medidas }] = await Promise.all([
@@ -23,153 +17,120 @@ export default async function AlunoPerfilPage({ params }: { params: Promise<{ id
     supabase.from('medidas').select('*').eq('aluno_id', id).order('data', { ascending: false }).limit(5),
   ])
 
-  const ultimaMedida = medidas?.[0]
-  const medidaAnterior = medidas?.[1]
-
-  function variacaoPeso() {
-    if (!ultimaMedida?.peso || !medidaAnterior?.peso) return null
-    return (ultimaMedida.peso - medidaAnterior.peso).toFixed(1)
-  }
-
-  const variacao = variacaoPeso()
+  const ultima = medidas?.[0]
+  const varPeso = ultima?.peso && medidas?.[1]?.peso ? (ultima.peso - medidas[1].peso).toFixed(1) : null
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
+      <nav className="px-5 py-4 flex items-center justify-between sticky top-0 z-10" style={{ background: '#0a0a0a', borderBottom: '1px solid #1a1a1a' }}>
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/personal/alunos" className="text-gray-400 hover:text-gray-600 text-sm">← Alunos</Link>
-          <span className="text-gray-300">|</span>
-          <span className="font-bold text-gray-900 truncate">{aluno.nome}</span>
+          <Link href="/dashboard/personal/alunos" style={{ color: '#555' }} className="text-sm hover:text-white">← Alunos</Link>
+          <span style={{ color: '#2a2a2a' }}>|</span>
+          <span className="font-bold text-white truncate">{aluno.nome}</span>
         </div>
         <DesvincularButton alunoId={id} alunoNome={aluno.nome} />
       </nav>
 
-      <main className="max-w-4xl mx-auto p-6 space-y-6">
-
-        {/* Header do aluno */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-5">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-2xl">
-              {aluno.nome?.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-gray-900">{aluno.nome}</h1>
-              <p className="text-gray-500 text-sm">{aluno.email}</p>
-              {aluno.telefone && <p className="text-gray-400 text-sm">{aluno.telefone}</p>}
-            </div>
-          </div>
-
-          {/* Stats rápidos */}
-          <div className="grid grid-cols-3 gap-4 mt-5 pt-5 border-t border-gray-100">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{treinos?.length || 0}</div>
-              <div className="text-xs text-gray-500">Treinos</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{medidas?.length || 0}</div>
-              <div className="text-xs text-gray-500">Avaliações</div>
-            </div>
-            <div className="text-center">
-              <div className={`text-2xl font-bold ${variacao && parseFloat(variacao) < 0 ? 'text-green-600' : variacao && parseFloat(variacao) > 0 ? 'text-red-500' : 'text-gray-900'}`}>
-                {ultimaMedida?.peso ? `${ultimaMedida.peso}kg` : '—'}
-              </div>
-              <div className="text-xs text-gray-500">
-                Peso atual {variacao ? `(${parseFloat(variacao) > 0 ? '+' : ''}${variacao}kg)` : ''}
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Ações rápidas */}
-<div className="flex gap-3 mt-4">
-  <Link href={`/dashboard/personal/alunos/${id}/avaliacoes`}
-    className="flex-1 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-colors text-center text-sm">
-    📏 Ver avaliações
-  </Link>
-  <Link href={`/dashboard/personal/alunos/${id}/relatorio`}
-    className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-center text-sm">
-    📊 Relatório completo
-  </Link>
-  <Link href={`/dashboard/personal/treinos/novo?aluno=${id}`}
-    className="flex-1 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors text-center text-sm">
-    🏋️ Novo treino
-  </Link>
-</div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Treinos */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900">🏋️ Treinos</h2>
-              <Link href={`/dashboard/personal/treinos/novo?aluno=${id}`}
-                className="text-xs text-green-600 font-medium hover:underline">
-                + Novo treino
-              </Link>
-            </div>
-            {(!treinos || treinos.length === 0) ? (
-              <div className="p-6 text-center text-gray-400 text-sm">Nenhum treino criado ainda</div>
+      <main className="max-w-2xl mx-auto px-5 py-6 space-y-4">
+        {/* Header */}
+        <div className="rounded-2xl p-5" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+          <div className="flex items-center gap-4 mb-5">
+            {aluno.avatar_url ? (
+              <img src={aluno.avatar_url} className="w-16 h-16 rounded-full object-cover" style={{ border: '3px solid #f97316' }} />
             ) : (
-              <div className="divide-y divide-gray-50">
-                {treinos.map(t => (
-                  <Link key={t.id} href={`/dashboard/personal/treinos/${t.id}`}
-                    className="flex items-center justify-between px-6 py-3 hover:bg-gray-50 transition-colors">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{t.nome}</div>
-                      {t.objetivo && <div className="text-xs text-gray-400">{t.objetivo}</div>}
-                    </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${t.ativo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-                      {t.ativo ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </Link>
-                ))}
+              <div className="w-16 h-16 rounded-full flex items-center justify-center font-extrabold text-2xl"
+                style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', color: 'white' }}>
+                {aluno.nome?.charAt(0).toUpperCase()}
               </div>
             )}
+            <div>
+              <h1 className="text-xl font-extrabold text-white">{aluno.nome}</h1>
+              <p className="text-sm" style={{ color: '#555' }}>{aluno.email}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[['Treinos', treinos?.length || 0, '🏋️'], ['Avaliações', medidas?.length || 0, '📏'], ['Peso', ultima?.peso ? `${ultima.peso}kg` : '—', '⚖️']].map(([l, v, i]) => (
+              <div key={l as string} className="rounded-xl p-3 text-center" style={{ background: '#1c1c1c' }}>
+                <div className="text-lg mb-0.5">{i}</div>
+                <div className="text-xl font-extrabold text-white">{v}</div>
+                <div className="text-xs" style={{ color: '#555' }}>{l}</div>
+                {l === 'Peso' && varPeso && (
+                  <div className="text-xs font-bold" style={{ color: parseFloat(varPeso) < 0 ? '#4ade80' : '#f87171' }}>
+                    {parseFloat(varPeso) > 0 ? '+' : ''}{varPeso}kg
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Ações */}
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { href: `/dashboard/personal/alunos/${id}/avaliacoes`, label: '📏 Avaliações', color: '#7c3aed' },
+            { href: `/dashboard/personal/alunos/${id}/relatorio`, label: '📊 Relatório', color: '#2563eb' },
+            { href: `/dashboard/personal/treinos/novo?aluno=${id}`, label: '🏋️ Novo treino', color: '#16a34a' },
+          ].map(a => (
+            <Link key={a.href} href={a.href}
+              className="py-3 rounded-xl text-center text-xs font-bold text-white transition-all hover:scale-105"
+              style={{ background: a.color }}>
+              {a.label}
+            </Link>
+          ))}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Treinos */}
+          <div className="rounded-2xl overflow-hidden" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+            <div className="px-4 py-3" style={{ borderBottom: '1px solid #1f1f1f' }}>
+              <p className="font-bold text-white text-sm">🏋️ Treinos</p>
+            </div>
+            {(!treinos || treinos.length === 0) ? (
+              <p className="px-4 py-6 text-xs text-center" style={{ color: '#444' }}>Nenhum treino</p>
+            ) : treinos.map(t => (
+              <Link key={t.id} href={`/dashboard/personal/treinos/${t.id}`}
+                className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors"
+                style={{ borderBottom: '1px solid #1a1a1a' }}>
+                <div>
+                  <p className="text-sm font-medium text-white">{t.nome}</p>
+                  {t.objetivo && <p className="text-xs" style={{ color: '#444' }}>{t.objetivo}</p>}
+                </div>
+                <span className="text-xs px-2 py-0.5 rounded-full"
+                  style={t.ativo ? { background: 'rgba(249,115,22,0.15)', color: '#f97316' } : { background: '#1c1c1c', color: '#444' }}>
+                  {t.ativo ? 'Ativo' : 'Inativo'}
+                </span>
+              </Link>
+            ))}
           </div>
 
           {/* Medidas */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900">📏 Avaliações</h2>
+          <div className="rounded-2xl overflow-hidden" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+            <div className="px-4 py-3" style={{ borderBottom: '1px solid #1f1f1f' }}>
+              <p className="font-bold text-white text-sm">📏 Avaliações</p>
             </div>
             {(!medidas || medidas.length === 0) ? (
-              <div className="p-6 text-center text-gray-400 text-sm">Nenhuma avaliação registrada</div>
-            ) : (
-              <div className="divide-y divide-gray-50">
-                {medidas.map((m, i) => (
-                  <div key={m.id} className="flex items-center justify-between px-6 py-3">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {new Date(m.data + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </div>
-                      {m.observacoes && <div className="text-xs text-gray-400 truncate max-w-36">{m.observacoes}</div>}
-                    </div>
-                    <div className="text-right">
-                      {m.peso && <div className="text-sm font-semibold text-gray-900">{m.peso} kg</div>}
-                      {m.percentual_gordura && <div className="text-xs text-gray-400">{m.percentual_gordura}% gord.</div>}
-                    </div>
-                  </div>
-                ))}
+              <p className="px-4 py-6 text-xs text-center" style={{ color: '#444' }}>Nenhuma avaliação</p>
+            ) : medidas.map(m => (
+              <div key={m.id} className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #1a1a1a' }}>
+                <p className="text-sm text-white">{new Date(m.data+'T12:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' })}</p>
+                <div className="text-right">
+                  {m.peso && <p className="text-sm font-bold" style={{ color: '#f97316' }}>{m.peso} kg</p>}
+                  {m.percentual_gordura && <p className="text-xs" style={{ color: '#444' }}>{m.percentual_gordura}%</p>}
+                </div>
               </div>
-            )}
+            ))}
           </div>
         </div>
 
-        {/* Últimas medidas detalhadas */}
-        {ultimaMedida && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h2 className="font-semibold text-gray-900 mb-4">📐 Última avaliação detalhada</h2>
-            <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
-              {[
-                ['Peso', ultimaMedida.peso, 'kg'],
-                ['Altura', ultimaMedida.altura, 'cm'],
-                ['% Gordura', ultimaMedida.percentual_gordura, '%'],
-                ['Cintura', ultimaMedida.cintura, 'cm'],
-                ['Quadril', ultimaMedida.quadril, 'cm'],
-                ['Braço D', ultimaMedida.braco_dir, 'cm'],
-              ].filter(([, v]) => v).map(([label, value, unit]) => (
-                <div key={label as string} className="bg-gray-50 rounded-xl p-3 text-center">
-                  <div className="text-lg font-bold text-gray-900">{value}</div>
-                  <div className="text-xs text-gray-400">{unit}</div>
-                  <div className="text-xs text-gray-500">{label}</div>
+        {ultima && (
+          <div className="rounded-2xl p-5" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+            <p className="font-bold text-white mb-3">📐 Última avaliação detalhada</p>
+            <div className="grid grid-cols-4 gap-2">
+              {[['Peso', ultima.peso, 'kg'], ['Altura', ultima.altura, 'cm'], ['% Gord.', ultima.percentual_gordura, '%'], ['Cintura', ultima.cintura, 'cm'], ['Quadril', ultima.quadril, 'cm'], ['Braço D', ultima.braco_dir, 'cm'], ['Coxa D', ultima.coxa_dir, 'cm'], ['Abdômen', ultima.abdomen, 'cm']].filter(([,v]) => v).map(([l,v,u]) => (
+                <div key={l as string} className="rounded-xl p-2.5 text-center" style={{ background: '#1c1c1c' }}>
+                  <div className="text-base font-extrabold text-white">{v}</div>
+                  <div className="text-xs" style={{ color: '#444' }}>{u}</div>
+                  <div className="text-xs" style={{ color: '#555' }}>{l}</div>
                 </div>
               ))}
             </div>

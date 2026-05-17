@@ -8,122 +8,78 @@ export default async function TreinoDetailPage({ params }: { params: Promise<{ i
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: treino } = await supabase
-    .from('treinos')
-    .select(`*, profiles!treinos_aluno_id_fkey(nome, email)`)
-    .eq('id', id)
-    .eq('personal_id', user.id)
-    .single()
-
+  const { data: treino } = await supabase.from('treinos').select('*, profiles!treinos_aluno_id_fkey(nome, email)').eq('id', id).eq('personal_id', user.id).single()
   if (!treino) redirect('/dashboard/personal/treinos')
 
-  const { data: exercicios } = await supabase
-    .from('exercicios')
-    .select('*')
-    .eq('treino_id', id)
-    .order('ordem')
-
+  const { data: exercicios } = await supabase.from('exercicios').select('*').eq('treino_id', id).order('ordem')
   const aluno = treino.profiles as any
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
+      <nav className="px-5 py-4 flex items-center justify-between sticky top-0 z-10" style={{ background: '#0a0a0a', borderBottom: '1px solid #1a1a1a' }}>
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/personal/treinos" className="text-gray-400 hover:text-gray-600 text-sm">← Treinos</Link>
-          <span className="text-gray-300">|</span>
-          <span className="font-bold text-gray-900 truncate max-w-xs">{treino.nome}</span>
+          <Link href="/dashboard/personal/treinos" style={{ color: '#555' }} className="text-sm hover:text-white">← Treinos</Link>
+          <span style={{ color: '#2a2a2a' }}>|</span>
+          <span className="font-bold text-white truncate max-w-48">{treino.nome}</span>
         </div>
-        <Link
-          href={`/dashboard/personal/treinos/${id}/editar`}
-          className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-200 transition-colors"
-        >
-          ✏️ Editar
-        </Link>
       </nav>
 
-      <main className="max-w-3xl mx-auto p-6 space-y-6">
-        {/* Header do treino */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex items-start justify-between mb-4">
+      <main className="max-w-2xl mx-auto px-5 py-6 space-y-4">
+        <div className="rounded-2xl p-5" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+          <div className="flex items-start justify-between mb-3">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{treino.nome}</h1>
+              <h1 className="text-xl font-extrabold text-white">{treino.nome}</h1>
               {treino.objetivo && (
-                <span className="inline-block mt-1 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
-                  {treino.objetivo}
-                </span>
+                <span className="text-xs px-2 py-0.5 rounded-full mt-1 inline-block font-semibold"
+                  style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>{treino.objetivo}</span>
               )}
             </div>
-            <span className={`text-xs px-3 py-1 rounded-full font-medium ${treino.ativo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-              {treino.ativo ? '✅ Ativo' : '⏸ Inativo'}
+            <span className="text-xs px-2 py-1 rounded-full font-semibold"
+              style={treino.ativo ? { background: 'rgba(249,115,22,0.15)', color: '#f97316' } : { background: '#1c1c1c', color: '#444' }}>
+              {treino.ativo ? 'Ativo' : 'Inativo'}
             </span>
           </div>
-
-          {treino.descricao && (
-            <p className="text-gray-600 text-sm bg-gray-50 rounded-xl p-3">{treino.descricao}</p>
+          {treino.descricao && <p className="text-sm rounded-xl p-3" style={{ background: '#1c1c1c', color: '#888' }}>{treino.descricao}</p>}
+          {aluno && (
+            <div className="flex items-center gap-2 mt-4 pt-4" style={{ borderTop: '1px solid #1f1f1f' }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
+                style={{ background: 'rgba(249,115,22,0.2)', color: '#f97316' }}>
+                {aluno.nome?.charAt(0)}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">{aluno.nome}</p>
+                <p className="text-xs" style={{ color: '#555' }}>{aluno.email}</p>
+              </div>
+            </div>
           )}
-
-          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-sm">
-              {aluno?.nome?.charAt(0) || '?'}
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-900">{aluno?.nome || 'Sem aluno vinculado'}</div>
-              {aluno?.email && <div className="text-xs text-gray-500">{aluno.email}</div>}
-            </div>
-          </div>
         </div>
 
-        {/* Exercícios */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-900 text-lg">
-              💪 Exercícios <span className="text-gray-400 font-normal text-base">({exercicios?.length || 0})</span>
-            </h2>
-          </div>
-
+        <div className="space-y-3">
+          <p className="text-xs font-semibold" style={{ color: '#555' }}>EXERCÍCIOS ({exercicios?.length || 0})</p>
           {(!exercicios || exercicios.length === 0) ? (
-            <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center text-gray-400">
-              <p>Nenhum exercício adicionado</p>
+            <div className="rounded-2xl p-10 text-center" style={{ background: '#141414', border: '1px dashed #2a2a2a' }}>
+              <p style={{ color: '#444' }}>Nenhum exercício</p>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {exercicios.map((ex, i) => (
-                <div key={ex.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-green-700 font-bold text-sm shrink-0">
-                      {i + 1}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-base">{ex.nome}</h3>
-                      <div className="flex gap-4 mt-2">
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-green-700">{ex.series}</div>
-                          <div className="text-xs text-gray-500">Séries</div>
-                        </div>
-                        <div className="w-px bg-gray-100" />
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-green-700">{ex.repeticoes}</div>
-                          <div className="text-xs text-gray-500">Reps</div>
-                        </div>
-                        <div className="w-px bg-gray-100" />
-                        <div className="text-center">
-                          <div className="text-lg font-bold text-green-700">
-                            {ex.descanso_segundos >= 60 ? `${Math.floor(ex.descanso_segundos / 60)}min` : `${ex.descanso_segundos}s`}
-                          </div>
-                          <div className="text-xs text-gray-500">Descanso</div>
-                        </div>
+          ) : exercicios.map((ex, i) => (
+            <div key={ex.id} className="rounded-2xl p-4" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
+                  style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>{i + 1}</div>
+                <div className="flex-1">
+                  <p className="font-bold text-white">{ex.nome}</p>
+                  <div className="flex gap-4 mt-2">
+                    {[['Séries', ex.series], ['Reps', ex.repeticoes], ['Descanso', ex.descanso_segundos >= 60 ? `${Math.floor(ex.descanso_segundos/60)}min` : `${ex.descanso_segundos}s`]].map(([l, v]) => (
+                      <div key={l as string} className="text-center">
+                        <p className="text-base font-extrabold" style={{ color: '#f97316' }}>{v}</p>
+                        <p className="text-xs" style={{ color: '#555' }}>{l}</p>
                       </div>
-                      {ex.observacoes && (
-                        <p className="mt-2 text-sm text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
-                          💬 {ex.observacoes}
-                        </p>
-                      )}
-                    </div>
+                    ))}
                   </div>
+                  {ex.observacoes && <p className="text-xs mt-2 rounded-lg px-2 py-1.5" style={{ background: '#1c1c1c', color: '#666' }}>💬 {ex.observacoes}</p>}
                 </div>
-              ))}
+              </div>
             </div>
-          )}
+          ))}
         </div>
       </main>
     </div>

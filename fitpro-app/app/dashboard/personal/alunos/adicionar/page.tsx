@@ -17,107 +17,73 @@ export default function AdicionarAlunoPage() {
 
   async function buscar() {
     if (!email.trim()) { setErro('Digite um e-mail.'); return }
-    setBuscando(true)
-    setErro('')
-    setAluno(null)
-    setMsg('')
-
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('email', email.trim().toLowerCase())
-      .eq('role', 'aluno')
-      .single()
-
-    if (!data) {
-      setErro('Nenhum aluno encontrado com esse e-mail. Verifique se ele já criou uma conta no FitPro como Aluno.')
-    } else if (data.personal_id) {
-      setErro('Este aluno já está vinculado a outro personal trainer.')
-    } else {
-      setAluno(data)
-    }
+    setBuscando(true); setErro(''); setAluno(null); setMsg('')
+    const { data } = await supabase.from('profiles').select('*').eq('email', email.trim().toLowerCase()).eq('role', 'aluno').single()
+    if (!data) setErro('Nenhum aluno encontrado com esse e-mail.')
+    else if (data.personal_id) setErro('Este aluno já está vinculado a outro personal.')
+    else setAluno(data)
     setBuscando(false)
   }
 
   async function vincular() {
     if (!aluno) return
     setVinculando(true)
-
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({ personal_id: user.id })
-      .eq('id', aluno.id)
-
-    if (error) {
-      setErro(`Erro ao vincular: ${error.message}`)
-      setVinculando(false)
-      return
-    }
-
-    setMsg('✅ Aluno vinculado com sucesso!')
+    const { error } = await supabase.from('profiles').update({ personal_id: user.id }).eq('id', aluno.id)
+    if (error) { setErro(`Erro: ${error.message}`); setVinculando(false); return }
+    setMsg('✅ Aluno vinculado!')
     setTimeout(() => router.push('/dashboard/personal/alunos'), 1500)
   }
 
+  const inputCls = "w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all"
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
-        <Link href="/dashboard/personal/alunos" className="text-gray-400 hover:text-gray-600 text-sm">← Alunos</Link>
-        <span className="text-gray-300">|</span>
-        <span className="font-bold text-gray-900">Vincular Aluno</span>
+    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
+      <nav className="px-5 py-4 flex items-center gap-3 sticky top-0 z-10" style={{ background: '#0a0a0a', borderBottom: '1px solid #1a1a1a' }}>
+        <Link href="/dashboard/personal/alunos" style={{ color: '#555' }} className="text-sm hover:text-white">← Alunos</Link>
+        <span style={{ color: '#2a2a2a' }}>|</span>
+        <span className="font-bold text-white">Vincular Aluno</span>
       </nav>
 
-      <main className="max-w-lg mx-auto p-6 space-y-5">
-
-        {/* Instrução */}
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-sm text-blue-700">
-          <strong>Como funciona:</strong> o aluno precisa primeiro criar uma conta no FitPro como <strong>Aluno</strong>. Depois você busca pelo e-mail dele aqui para vincular.
+      <main className="max-w-md mx-auto px-5 py-6 space-y-4">
+        <div className="rounded-2xl p-4 text-sm" style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)', color: '#f97316' }}>
+          O aluno precisa criar uma conta no FitPro como <strong>Aluno</strong> primeiro.
         </div>
 
-        {/* Busca */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
-          <h2 className="font-semibold text-gray-900">Buscar por e-mail</h2>
-          <div className="flex gap-3">
-            <input
-              type="email"
-              value={email}
-              onChange={e => { setEmail(e.target.value); setAluno(null); setErro(''); setMsg('') }}
+        <div className="rounded-2xl p-5 space-y-4" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+          <h2 className="font-bold text-white">Buscar por e-mail</h2>
+          <div className="flex gap-2">
+            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setAluno(null); setErro(''); setMsg('') }}
               onKeyDown={e => e.key === 'Enter' && buscar()}
-              placeholder="email@doaluno.com"
-              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-            />
+              placeholder="email@doaluno.com" className={inputCls}
+              style={{ background: '#1c1c1c', border: '1px solid #2a2a2a' }} />
             <button onClick={buscar} disabled={buscando}
-              className="px-5 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-700 disabled:opacity-50 transition-colors">
+              className="px-4 py-3 rounded-xl font-bold text-white text-sm disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)', minWidth: 48 }}>
               {buscando ? '...' : '🔍'}
             </button>
           </div>
-
-          {erro && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl p-3">{erro}</div>
-          )}
-          {msg && (
-            <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl p-3">{msg}</div>
-          )}
+          {erro && <p className="text-xs rounded-xl px-3 py-2" style={{ background: '#1a0a0a', border: '1px solid #3a1515', color: '#f87171' }}>{erro}</p>}
+          {msg && <p className="text-xs rounded-xl px-3 py-2" style={{ background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.3)', color: '#f97316' }}>{msg}</p>}
         </div>
 
-        {/* Card do aluno encontrado */}
         {aluno && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-green-200 space-y-4">
-            <h3 className="font-semibold text-gray-900">Aluno encontrado ✓</h3>
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-xl">
+          <div className="rounded-2xl p-5 space-y-4" style={{ background: '#141414', border: '1px solid rgba(249,115,22,0.4)' }}>
+            <p className="text-sm font-semibold" style={{ color: '#f97316' }}>Aluno encontrado ✓</p>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg"
+                style={{ background: 'rgba(249,115,22,0.2)', color: '#f97316' }}>
                 {aluno.nome?.charAt(0).toUpperCase()}
               </div>
               <div>
-                <div className="font-semibold text-gray-900 text-lg">{aluno.nome}</div>
-                <div className="text-sm text-gray-500">{aluno.email}</div>
+                <p className="font-bold text-white">{aluno.nome}</p>
+                <p className="text-sm" style={{ color: '#666' }}>{aluno.email}</p>
               </div>
             </div>
-
             <button onClick={vincular} disabled={vinculando}
-              className="w-full py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors">
+              className="w-full py-3 rounded-xl font-bold text-white transition-all hover:scale-[1.02] disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)' }}>
               {vinculando ? 'Vinculando...' : '✅ Confirmar vínculo'}
             </button>
           </div>

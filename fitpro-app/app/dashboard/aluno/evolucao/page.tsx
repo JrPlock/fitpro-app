@@ -3,170 +3,121 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend
-} from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 const METRICAS = [
-  { key: 'peso', label: 'Peso (kg)', cor: '#16a34a' },
-  { key: 'percentual_gordura', label: '% Gordura', cor: '#f97316' },
-  { key: 'cintura', label: 'Cintura (cm)', cor: '#8b5cf6' },
-  { key: 'quadril', label: 'Quadril (cm)', cor: '#ec4899' },
-  { key: 'braco_dir', label: 'Braço D (cm)', cor: '#3b82f6' },
-  { key: 'coxa_dir', label: 'Coxa D (cm)', cor: '#f59e0b' },
+  { key: 'peso', label: 'Peso (kg)', cor: '#f97316' },
+  { key: 'percentual_gordura', label: '% Gordura', cor: '#fb923c' },
+  { key: 'cintura', label: 'Cintura (cm)', cor: '#a78bfa' },
+  { key: 'quadril', label: 'Quadril (cm)', cor: '#f472b6' },
+  { key: 'braco_dir', label: 'Braço D (cm)', cor: '#60a5fa' },
+  { key: 'coxa_dir', label: 'Coxa D (cm)', cor: '#fbbf24' },
 ]
 
 export default function EvolucaoPage() {
   const [dados, setDados] = useState<any[]>([])
-  const [metricaSelecionada, setMetricaSelecionada] = useState('peso')
+  const [metrica, setMetrica] = useState('peso')
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
-    async function carregar() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { data } = await supabase
-        .from('medidas')
-        .select('*')
-        .eq('aluno_id', user.id)
-        .order('data', { ascending: true })
-
-      if (data) {
-        setDados(data.map(m => ({
-          ...m,
-          dataFormatada: new Date(m.data + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
-        })))
-      }
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser(); if (!user) return
+      const { data } = await supabase.from('medidas').select('*').eq('aluno_id', user.id).order('data', { ascending: true })
+      if (data) setDados(data.map(m => ({ ...m, dataFormatada: new Date(m.data + 'T12:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'short' }) })))
       setLoading(false)
     }
-    carregar()
+    load()
   }, [])
 
-  const metricaAtual = METRICAS.find(m => m.key === metricaSelecionada)!
-  const dadosValidos = dados.filter(d => d[metricaSelecionada] !== null && d[metricaSelecionada] !== undefined)
-
-  const primeiro = dadosValidos[0]?.[metricaSelecionada]
-  const ultimo = dadosValidos[dadosValidos.length - 1]?.[metricaSelecionada]
+  const ma = METRICAS.find(m => m.key === metrica)!
+  const dv = dados.filter(d => d[metrica] != null)
+  const primeiro = dv[0]?.[metrica], ultimo = dv[dv.length-1]?.[metrica]
   const variacao = primeiro && ultimo ? (ultimo - primeiro).toFixed(1) : null
-  const variacaoNum = variacao ? parseFloat(variacao) : 0
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
+      <nav className="px-5 py-4 flex items-center justify-between sticky top-0 z-10" style={{ background: '#0a0a0a', borderBottom: '1px solid #1a1a1a' }}>
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/aluno/medidas" className="text-gray-400 hover:text-gray-600 text-sm">← Medidas</Link>
-          <span className="text-gray-300">|</span>
-          <span className="font-bold text-gray-900">📈 Evolução</span>
+          <Link href="/dashboard/aluno/medidas" style={{ color: '#555' }} className="text-sm hover:text-white">← Medidas</Link>
+          <span style={{ color: '#2a2a2a' }}>|</span>
+          <span className="font-bold text-white">📈 Evolução</span>
         </div>
-        <Link href="/dashboard/aluno/medidas/nova"
-          className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-xl hover:bg-green-700 transition-colors">
-          + Nova medida
-        </Link>
+        <Link href="/dashboard/aluno/medidas/nova" className="px-3 py-2 rounded-xl text-xs font-bold text-white"
+          style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)' }}>+ Nova</Link>
       </nav>
 
-      <main className="max-w-3xl mx-auto p-6 space-y-6">
-
-        {loading ? (
-          <div className="text-center py-20 text-gray-400">Carregando dados...</div>
-        ) : dados.length < 2 ? (
-          <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-16 text-center">
+      <main className="max-w-2xl mx-auto px-5 py-6 space-y-5">
+        {loading ? <p className="text-center py-20" style={{ color: '#555' }}>Carregando...</p>
+        : dados.length < 2 ? (
+          <div className="rounded-2xl p-16 text-center" style={{ background: '#141414', border: '1px dashed #2a2a2a' }}>
             <div className="text-5xl mb-3">📈</div>
-            <p className="text-gray-500 text-sm mb-2">Você precisa de ao menos 2 avaliações para ver gráficos</p>
-            <Link href="/dashboard/aluno/medidas/nova"
-              className="inline-block mt-3 px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors text-sm">
-              Registrar avaliação
-            </Link>
+            <p className="font-semibold text-white mb-1">Poucas avaliações</p>
+            <p className="text-sm mb-5" style={{ color: '#555' }}>Você precisa de ao menos 2 avaliações para ver gráficos</p>
+            <Link href="/dashboard/aluno/medidas/nova" className="px-5 py-2.5 rounded-xl text-sm font-bold text-white"
+              style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)' }}>Registrar avaliação</Link>
           </div>
         ) : (
           <>
-            {/* Selector de métrica */}
             <div className="flex flex-wrap gap-2">
               {METRICAS.map(m => (
-                <button key={m.key} onClick={() => setMetricaSelecionada(m.key)}
-                  className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${metricaSelecionada === m.key
-                    ? 'text-white shadow-md'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
-                  }`}
-                  style={metricaSelecionada === m.key ? { backgroundColor: m.cor } : {}}>
+                <button key={m.key} onClick={() => setMetrica(m.key)}
+                  className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
+                  style={metrica === m.key ? { background: m.cor, color: 'white' } : { background: '#141414', border: '1px solid #2a2a2a', color: '#666' }}>
                   {m.label}
                 </button>
               ))}
             </div>
 
-            {/* Card de variação */}
             {variacao && (
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center justify-between">
+              <div className="flex items-center justify-between rounded-2xl p-5" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
                 <div>
-                  <p className="text-sm text-gray-500">Variação total — {metricaAtual.label}</p>
-                  <p className="text-3xl font-bold mt-1" style={{ color: metricaAtual.cor }}>
-                    {ultimo}
-                  </p>
-                  <p className="text-xs text-gray-400">valor atual</p>
+                  <p className="text-xs font-semibold mb-1" style={{ color: '#666' }}>{ma.label.toUpperCase()} ATUAL</p>
+                  <p className="text-3xl font-extrabold" style={{ color: ma.cor }}>{ultimo}</p>
                 </div>
                 <div className="text-right">
-                  <p className={`text-2xl font-bold ${variacaoNum < 0 ? 'text-green-600' : variacaoNum > 0 ? 'text-red-500' : 'text-gray-400'}`}>
-                    {variacaoNum > 0 ? '+' : ''}{variacao}
+                  <p className="text-xs font-semibold mb-1" style={{ color: '#666' }}>VARIAÇÃO TOTAL</p>
+                  <p className="text-2xl font-extrabold" style={{ color: parseFloat(variacao) < 0 ? '#4ade80' : parseFloat(variacao) > 0 ? '#f87171' : '#666' }}>
+                    {parseFloat(variacao) > 0 ? '+' : ''}{variacao}
                   </p>
-                  <p className="text-xs text-gray-400">desde o início</p>
-                  <p className="text-xs text-gray-400">{dadosValidos.length} avaliações</p>
+                  <p className="text-xs" style={{ color: '#444' }}>{dv.length} avaliações</p>
                 </div>
               </div>
             )}
 
-            {/* Gráfico */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h2 className="font-semibold text-gray-900 mb-4">{metricaAtual.label} ao longo do tempo</h2>
-              {dadosValidos.length < 2 ? (
-                <p className="text-center text-gray-400 text-sm py-8">Dados insuficientes para esta métrica</p>
-              ) : (
-                <ResponsiveContainer width="100%" height={280}>
-                  <LineChart data={dadosValidos} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="dataFormatada" tick={{ fontSize: 12 }} stroke="#9ca3af" />
-                    <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" domain={['auto', 'auto']} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: 13 }}
-                      formatter={(v: any) => [`${v}`, metricaAtual.label]}
-                      labelFormatter={(l) => `Data: ${l}`}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey={metricaSelecionada}
-                      stroke={metricaAtual.cor}
-                      strokeWidth={3}
-                      dot={{ fill: metricaAtual.cor, r: 5 }}
-                      activeDot={{ r: 7 }}
-                    />
+            <div className="rounded-2xl p-5" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+              <h2 className="font-bold text-white mb-4">{ma.label} ao longo do tempo</h2>
+              {dv.length < 2 ? <p className="text-center py-8 text-sm" style={{ color: '#555' }}>Dados insuficientes</p> : (
+                <ResponsiveContainer width="100%" height={240}>
+                  <LineChart data={dv} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1f1f1f" />
+                    <XAxis dataKey="dataFormatada" tick={{ fontSize: 11, fill: '#555' }} stroke="#333" />
+                    <YAxis tick={{ fontSize: 11, fill: '#555' }} stroke="#333" domain={['auto','auto']} />
+                    <Tooltip contentStyle={{ background: '#141414', border: '1px solid #2a2a2a', borderRadius: '12px', fontSize: 13, color: 'white' }}
+                      formatter={(v: any) => [`${v}`, ma.label]} labelFormatter={l => `Data: ${l}`} />
+                    <Line type="monotone" dataKey={metrica} stroke={ma.cor} strokeWidth={3} dot={{ fill: ma.cor, r: 5 }} activeDot={{ r: 7 }} />
                   </LineChart>
                 </ResponsiveContainer>
               )}
             </div>
 
-            {/* Tabela histórico */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
-                <h2 className="font-semibold text-gray-900">Histórico de avaliações</h2>
+            <div className="rounded-2xl overflow-hidden" style={{ background: '#141414', border: '1px solid #2a2a2a' }}>
+              <div className="px-5 py-4" style={{ borderBottom: '1px solid #1f1f1f' }}>
+                <h2 className="font-bold text-white">Histórico</h2>
               </div>
-              <div className="divide-y divide-gray-50">
-                {[...dados].reverse().map((m, i) => (
-                  <div key={m.id} className="px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {i === 0 && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Recente</span>}
-                      <span className="text-sm font-medium text-gray-900">
-                        {new Date(m.data + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
-                      </span>
-                    </div>
-                    <div className="flex gap-4 text-sm text-gray-500">
-                      {m.peso && <span><strong className="text-gray-900">{m.peso}</strong> kg</span>}
-                      {m.cintura && <span>Cintura: <strong className="text-gray-900">{m.cintura}</strong> cm</span>}
-                      {m.percentual_gordura && <span><strong className="text-gray-900">{m.percentual_gordura}</strong>% gord.</span>}
-                    </div>
+              {[...dados].reverse().map((m, i) => (
+                <div key={m.id} className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: '1px solid #1a1a1a' }}>
+                  <div className="flex items-center gap-2">
+                    {i === 0 && <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316' }}>Recente</span>}
+                    <span className="text-sm font-medium text-white">{new Date(m.data + 'T12:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' })}</span>
                   </div>
-                ))}
-              </div>
+                  <div className="flex gap-3 text-sm" style={{ color: '#666' }}>
+                    {m.peso && <span><strong className="text-white">{m.peso}</strong> kg</span>}
+                    {m.cintura && <span>Cin: <strong className="text-white">{m.cintura}</strong></span>}
+                    {m.percentual_gordura && <span><strong className="text-white">{m.percentual_gordura}</strong>%</span>}
+                  </div>
+                </div>
+              ))}
             </div>
           </>
         )}
