@@ -117,6 +117,11 @@ export default async function TreinoDetailPage({ params }: { params: Promise<{ i
           <span style={{ color: 'var(--border)' }}>|</span>
           <span className="font-bold text-white truncate max-w-48">{treinoData.nome}</span>
         </div>
+        <Link href={`/dashboard/personal/treinos/${id}/editar`}
+          className="px-4 py-2 rounded-xl text-sm font-bold text-white"
+          style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))' }}>
+          Editar
+        </Link>
       </nav>
 
       <main className="max-w-2xl mx-auto px-5 py-6 space-y-4">

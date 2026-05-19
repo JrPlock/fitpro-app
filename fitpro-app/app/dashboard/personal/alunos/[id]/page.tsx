@@ -4,6 +4,7 @@ import Link from 'next/link'
 import DesvincularButton from './DesvincularButton'
 
 type PacoteAluno = {
+  id: string
   tipo_atendimento: 'presencial' | 'online' | 'hibrido'
   data_inicio: string
   data_vencimento: string
@@ -124,14 +125,21 @@ export default async function AlunoPerfilPage({ params }: { params: Promise<{ id
                   {pacoteAtivo.sessoes_semana ? ` · ${pacoteAtivo.sessoes_semana}x por semana` : ''}
                 </p>
               </div>
-              <span className="text-xs font-bold px-3 py-1 rounded-full"
-                style={{
-                  background: vencimentoDiff !== null && vencimentoDiff < 0 ? 'var(--danger-bg)' : 'var(--accent-glow)',
-                  color: vencimentoDiff !== null && vencimentoDiff < 0 ? 'var(--danger)' : 'var(--accent)',
-                  border: `1px solid ${vencimentoDiff !== null && vencimentoDiff < 0 ? 'var(--danger-border)' : 'rgba(249,115,22,0.3)'}`,
-                }}>
-                {vencimentoLabel(pacoteAtivo.data_vencimento)}
-              </span>
+              <div className="flex items-center gap-2">
+                <Link href={`/dashboard/personal/alunos/${id}/pacote/editar`}
+                  className="text-xs font-bold px-3 py-1 rounded-full"
+                  style={{ background: 'var(--bg-card2)', color: 'var(--accent)', border: '1px solid var(--border)' }}>
+                  Editar
+                </Link>
+                <span className="text-xs font-bold px-3 py-1 rounded-full"
+                  style={{
+                    background: vencimentoDiff !== null && vencimentoDiff < 0 ? 'var(--danger-bg)' : 'var(--accent-glow)',
+                    color: vencimentoDiff !== null && vencimentoDiff < 0 ? 'var(--danger)' : 'var(--accent)',
+                    border: `1px solid ${vencimentoDiff !== null && vencimentoDiff < 0 ? 'var(--danger-border)' : 'rgba(249,115,22,0.3)'}`,
+                  }}>
+                  {vencimentoLabel(pacoteAtivo.data_vencimento)}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
