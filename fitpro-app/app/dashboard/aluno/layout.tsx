@@ -22,7 +22,7 @@ export default async function AlunoLayout({ children }: { children: React.ReactN
   if (profile?.role !== 'aluno') redirect('/dashboard/personal')
 
   const { data: personal } = profile?.personal_id
-    ? await supabase.from('profiles').select('logo_url').eq('id', profile.personal_id).maybeSingle()
+    ? await supabase.from('profiles').select('logo_url').eq('id', profile.personal_id).eq('role', 'personal').maybeSingle()
     : { data: null }
 
   return (

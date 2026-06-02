@@ -79,6 +79,7 @@ export default async function DashboardAluno() {
       .from('profiles')
       .select('nome, avatar_url, logo_url, telefone, whatsapp, instagram, site, bio')
       .eq('id', profile.personal_id)
+      .eq('role', 'personal')
       .maybeSingle()
     : { data: null }
 
