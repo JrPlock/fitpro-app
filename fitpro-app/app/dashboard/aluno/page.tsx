@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { ExternalLink, Phone } from 'lucide-react'
 
 type PacoteAluno = {
   personal_id: string
@@ -62,6 +63,26 @@ function vencimentoLabel(date: string) {
   if (diff < 0) return `Vencido há ${Math.abs(diff)} dia${Math.abs(diff) === 1 ? '' : 's'}`
   if (diff === 0) return 'Vence hoje'
   return `Faltam ${diff} dia${diff === 1 ? '' : 's'}`
+}
+
+function onlyNumbers(value: string) {
+  return value.replace(/\D/g, '')
+}
+
+function whatsappHref(value: string) {
+  const phone = onlyNumbers(value)
+  return phone ? `https://wa.me/${phone.startsWith('55') ? phone : `55${phone}`}` : null
+}
+
+function instagramHref(value: string) {
+  const user = value.trim().replace(/^@/, '').replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/\/$/, '')
+  return user ? `https://instagram.com/${user}` : null
+}
+
+function siteHref(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
 }
 
 export default async function DashboardAluno() {
@@ -187,21 +208,39 @@ export default async function DashboardAluno() {
             </p>
           )}
 
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              personal.whatsapp && { label: 'WhatsApp', value: personal.whatsapp },
-              personal.telefone && { label: 'Telefone', value: personal.telefone },
-              personal.instagram && { label: 'Instagram', value: personal.instagram },
-              personal.site && { label: 'Site', value: personal.site },
-            ].filter(Boolean).map(item => {
-              const contact = item as { label: string; value: string }
-              return (
-                <div key={contact.label} className="rounded-xl p-3" style={{ background: 'var(--bg-card2)' }}>
-                  <p className="text-xs font-semibold" style={{ color: 'var(--text-dim)' }}>{contact.label}</p>
-                  <p className="text-sm font-bold text-white truncate">{contact.value}</p>
-                </div>
-              )
-            })}
+          <div className="flex flex-wrap gap-2">
+            {personal.whatsapp && whatsappHref(personal.whatsapp) && (
+              <a href={whatsappHref(personal.whatsapp) || '#'} target="_blank" rel="noreferrer"
+                aria-label="Abrir WhatsApp do personal"
+                className="w-12 h-12 rounded-xl flex items-center justify-center font-extrabold text-sm transition-all hover:scale-105"
+                style={{ background: '#16a34a', color: 'white' }}>
+                W
+              </a>
+            )}
+            {personal.instagram && instagramHref(personal.instagram) && (
+              <a href={instagramHref(personal.instagram) || '#'} target="_blank" rel="noreferrer"
+                aria-label="Abrir Instagram do personal"
+                className="w-12 h-12 rounded-xl flex items-center justify-center font-extrabold text-sm transition-all hover:scale-105"
+                style={{ background: 'linear-gradient(135deg, #f97316, #db2777, #7c3aed)', color: 'white' }}>
+                IG
+              </a>
+            )}
+            {personal.telefone && (
+              <a href={`tel:${onlyNumbers(personal.telefone)}`}
+                aria-label="Ligar para o personal"
+                className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                style={{ background: 'var(--bg-card2)', color: 'var(--accent)', border: '1px solid var(--border)' }}>
+                <Phone size={20} />
+              </a>
+            )}
+            {personal.site && siteHref(personal.site) && (
+              <a href={siteHref(personal.site) || '#'} target="_blank" rel="noreferrer"
+                aria-label="Abrir site do personal"
+                className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                style={{ background: 'var(--bg-card2)', color: 'var(--accent)', border: '1px solid var(--border)' }}>
+                <ExternalLink size={20} />
+              </a>
+            )}
           </div>
         </div>
       )}
