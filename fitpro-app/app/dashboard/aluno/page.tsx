@@ -12,6 +12,17 @@ type PacoteAluno = {
   observacoes: string | null
 }
 
+type PersonalProfile = {
+  nome: string | null
+  avatar_url: string | null
+  logo_url: string | null
+  telefone: string | null
+  whatsapp: string | null
+  instagram: string | null
+  site: string | null
+  bio: string | null
+}
+
 const tipoLabels: Record<PacoteAluno['tipo_atendimento'], string> = {
   presencial: 'Presencial',
   online: 'Online / consultoria',
@@ -63,8 +74,17 @@ export default async function DashboardAluno() {
     supabase.from('pacotes_alunos').select('*').eq('aluno_id', user.id).eq('status', 'ativo').order('created_at', { ascending: false }).limit(1).maybeSingle(),
   ])
 
+  const { data: personalData } = profile?.personal_id
+    ? await supabase
+      .from('profiles')
+      .select('nome, avatar_url, logo_url, telefone, whatsapp, instagram, site, bio')
+      .eq('id', profile.personal_id)
+      .maybeSingle()
+    : { data: null }
+
   const firstName = profile?.nome?.split(' ')[0] || 'Aluno'
   const pacoteAtivo = pacote as PacoteAluno | null
+  const personal = personalData as PersonalProfile | null
   const vencimentoDiff = pacoteAtivo ? diasAte(pacoteAtivo.data_vencimento) : null
 
   return (
@@ -144,6 +164,49 @@ export default async function DashboardAluno() {
               {pacoteAtivo.observacoes}
             </p>
           )}
+        </div>
+      )}
+
+      {personal && (
+        <div className="rounded-2xl p-5 space-y-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <div className="flex items-center gap-3">
+            {personal.avatar_url ? (
+              <img src={personal.avatar_url} alt="" className="w-14 h-14 rounded-full object-cover" style={{ border: '2px solid var(--accent)' }} />
+            ) : (
+              <div className="w-14 h-14 rounded-full flex items-center justify-center font-extrabold text-lg"
+                style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', color: 'white' }}>
+                {personal.nome?.charAt(0)?.toUpperCase() || 'P'}
+              </div>
+            )}
+            <div className="min-w-0">
+              {personal.logo_url && <img src={personal.logo_url} alt="Logo do personal" className="h-7 max-w-40 object-contain object-left mb-1" />}
+              <p className="font-bold text-white truncate">{personal.nome || 'Personal'}</p>
+              <p className="text-xs" style={{ color: 'var(--text-dim)' }}>Seu personal</p>
+            </div>
+          </div>
+
+          {personal.bio && (
+            <p className="text-sm rounded-xl px-3 py-2" style={{ background: 'var(--bg-card2)', color: 'var(--text-muted)' }}>
+              {personal.bio}
+            </p>
+          )}
+
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              personal.whatsapp && { label: 'WhatsApp', value: personal.whatsapp },
+              personal.telefone && { label: 'Telefone', value: personal.telefone },
+              personal.instagram && { label: 'Instagram', value: personal.instagram },
+              personal.site && { label: 'Site', value: personal.site },
+            ].filter(Boolean).map(item => {
+              const contact = item as { label: string; value: string }
+              return (
+                <div key={contact.label} className="rounded-xl p-3" style={{ background: 'var(--bg-card2)' }}>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--text-dim)' }}>{contact.label}</p>
+                  <p className="text-sm font-bold text-white truncate">{contact.value}</p>
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
 

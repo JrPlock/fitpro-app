@@ -11,7 +11,12 @@ CREATE TABLE profiles (
   role TEXT NOT NULL CHECK (role IN ('personal', 'aluno')),
   personal_id UUID REFERENCES profiles(id),
   avatar_url TEXT,
+  logo_url TEXT,
   telefone TEXT,
+  whatsapp TEXT,
+  instagram TEXT,
+  site TEXT,
+  bio TEXT,
   data_nascimento DATE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -179,6 +184,18 @@ AS $$
   WHERE id = auth.uid()
 $$;
 
+CREATE OR REPLACE FUNCTION public.current_user_personal_id()
+RETURNS uuid
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+  SELECT personal_id
+  FROM public.profiles
+  WHERE id = auth.uid()
+$$;
+
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
@@ -206,6 +223,12 @@ FOR SELECT USING (
     AND (personal_id = auth.uid() OR personal_id IS NULL)
     AND public.current_user_role() = 'personal'
   )
+);
+
+CREATE POLICY "profiles_aluno_select_personal" ON profiles
+FOR SELECT USING (
+  role = 'personal'
+  AND id = public.current_user_personal_id()
 );
 
 CREATE POLICY "profiles_insert_own" ON profiles

@@ -7,9 +7,9 @@ import { useRouter } from 'next/navigation'
 import ThemeToggle from './ThemeToggle'
 
 interface NavItem { href: string; icon: string; label: string }
-interface Props { items: NavItem[]; role: 'personal' | 'aluno'; userName?: string; avatarUrl?: string }
+interface Props { items: NavItem[]; role: 'personal' | 'aluno'; userName?: string; avatarUrl?: string; logoUrl?: string | null }
 
-export default function Sidebar({ items, role, userName, avatarUrl }: Props) {
+export default function Sidebar({ items, role, userName, avatarUrl, logoUrl }: Props) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -25,9 +25,13 @@ export default function Sidebar({ items, role, userName, avatarUrl }: Props) {
 
       {/* Logo */}
       <div className="px-6 py-5" style={{ borderBottom: '1px solid var(--border-sidebar)' }}>
-        <span className="text-xl font-extrabold" style={{ color: 'var(--text)' }}>
-          Fit<span style={{ color: 'var(--accent)' }}>Pro</span>
-        </span>
+        {logoUrl ? (
+          <img src={logoUrl} alt="Logo" className="h-10 max-w-36 object-contain object-left" />
+        ) : (
+          <span className="text-xl font-extrabold" style={{ color: 'var(--text)' }}>
+            Fit<span style={{ color: 'var(--accent)' }}>Pro</span>
+          </span>
+        )}
         <div className="mt-1">
           <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
             style={{ background: 'var(--accent-glow)', color: 'var(--accent)', border: '1px solid var(--accent-glow-strong)' }}>
@@ -64,13 +68,13 @@ export default function Sidebar({ items, role, userName, avatarUrl }: Props) {
         <ThemeToggle />
 
         {/* User */}
-        <Link href={role === 'aluno' ? '/dashboard/aluno/perfil' : '#'}
+        <Link href={role === 'aluno' ? '/dashboard/aluno/perfil' : '/dashboard/personal/perfil'}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
           style={{ background: 'transparent' }}
           onMouseEnter={e => (e.currentTarget.style.background = 'var(--hover)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
           {avatarUrl ? (
-            <img src={avatarUrl} className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+            <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0"
               style={{ border: '2px solid var(--accent)' }} />
           ) : (
             <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 text-white"

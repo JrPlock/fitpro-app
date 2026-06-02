@@ -6,9 +6,9 @@ import { useState } from 'react'
 import ThemeToggle from './ThemeToggle'
 
 interface NavItem { href: string; icon: string; label: string }
-interface Props { items: NavItem[]; role: 'personal' | 'aluno'; userName?: string; avatarUrl?: string }
+interface Props { items: NavItem[]; role: 'personal' | 'aluno'; userName?: string; avatarUrl?: string; logoUrl?: string | null }
 
-export default function MobileNav({ items, role, userName, avatarUrl }: Props) {
+export default function MobileNav({ items, role, userName, avatarUrl, logoUrl }: Props) {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
   const mainItems = items.slice(0, 4)
@@ -27,19 +27,23 @@ export default function MobileNav({ items, role, userName, avatarUrl }: Props) {
 
             {/* Header do menu */}
             <div className="px-5 py-5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-sidebar)' }}>
-              <span className="text-lg font-extrabold" style={{ color: 'var(--text)' }}>
-                Fit<span style={{ color: 'var(--accent)' }}>Pro</span>
-              </span>
+              {logoUrl ? (
+                <img src={logoUrl} alt="Logo" className="h-9 max-w-36 object-contain object-left" />
+              ) : (
+                <span className="text-lg font-extrabold" style={{ color: 'var(--text)' }}>
+                  Fit<span style={{ color: 'var(--accent)' }}>Pro</span>
+                </span>
+              )}
               <button onClick={() => setMenuOpen(false)} className="text-xl" style={{ color: 'var(--text-dim)' }}>✕</button>
             </div>
 
             {/* Avatar e nome */}
-            <Link href={role === 'aluno' ? '/dashboard/aluno/perfil' : '#'}
+            <Link href={role === 'aluno' ? '/dashboard/aluno/perfil' : '/dashboard/personal/perfil'}
               onClick={() => setMenuOpen(false)}
               className="flex items-center gap-3 px-5 py-4"
               style={{ borderBottom: '1px solid var(--border-sidebar)' }}>
               {avatarUrl ? (
-                <img src={avatarUrl} className="w-11 h-11 rounded-full object-cover" style={{ border: '2px solid var(--accent)' }} />
+                <img src={avatarUrl} alt="" className="w-11 h-11 rounded-full object-cover" style={{ border: '2px solid var(--accent)' }} />
               ) : (
                 <div className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-white"
                   style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))' }}>
