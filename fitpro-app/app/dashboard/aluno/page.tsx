@@ -85,6 +85,25 @@ function siteHref(value: string) {
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
 }
 
+function WhatsAppIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="23" height="23" aria-hidden="true" fill="none">
+      <path d="M4.6 19.5l1-3.7A7.7 7.7 0 1 1 8.8 19l-4.2.5Z" fill="currentColor" />
+      <path d="M9.1 7.8c-.2-.5-.4-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.3 0 1.4 1 2.7 1.1 2.9.1.2 2 3.2 5 4.3 2.5 1 3 .8 3.5.8.5-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.4l-1.8-.9c-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.5.1-.2.1-.4 0-.6L9.1 7.8Z" fill="#16a34a" />
+    </svg>
+  )
+}
+
+function InstagramIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none">
+      <rect x="4.2" y="4.2" width="15.6" height="15.6" rx="4.4" stroke="currentColor" strokeWidth="2" />
+      <circle cx="12" cy="12" r="3.7" stroke="currentColor" strokeWidth="2" />
+      <circle cx="16.8" cy="7.4" r="1.1" fill="currentColor" />
+    </svg>
+  )
+}
+
 export default async function DashboardAluno() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -212,17 +231,17 @@ export default async function DashboardAluno() {
             {personal.whatsapp && whatsappHref(personal.whatsapp) && (
               <a href={whatsappHref(personal.whatsapp) || '#'} target="_blank" rel="noreferrer"
                 aria-label="Abrir WhatsApp do personal"
-                className="w-12 h-12 rounded-xl flex items-center justify-center font-extrabold text-sm transition-all hover:scale-105"
+                className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-105"
                 style={{ background: '#16a34a', color: 'white' }}>
-                W
+                <WhatsAppIcon />
               </a>
             )}
             {personal.instagram && instagramHref(personal.instagram) && (
               <a href={instagramHref(personal.instagram) || '#'} target="_blank" rel="noreferrer"
                 aria-label="Abrir Instagram do personal"
-                className="w-12 h-12 rounded-xl flex items-center justify-center font-extrabold text-sm transition-all hover:scale-105"
+                className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-105"
                 style={{ background: 'linear-gradient(135deg, #f97316, #db2777, #7c3aed)', color: 'white' }}>
-                IG
+                <InstagramIcon />
               </a>
             )}
             {personal.telefone && (
