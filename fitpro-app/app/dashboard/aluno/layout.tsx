@@ -21,18 +21,8 @@ export default async function AlunoLayout({ children }: { children: React.ReactN
   const { data: profile } = await supabase.from('profiles').select('nome, avatar_url, role, personal_id').eq('id', user.id).single()
   if (profile?.role !== 'aluno') redirect('/dashboard/personal')
 
-  const { data: pacote } = await supabase
-    .from('pacotes_alunos')
-    .select('personal_id')
-    .eq('aluno_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  const personalId = profile?.personal_id || pacote?.personal_id
-  const { data: personal } = personalId
-    ? await supabase.from('profiles').select('logo_url').eq('id', personalId).eq('role', 'personal').maybeSingle()
-    : { data: null }
+  const { data: personalRows } = await supabase.rpc('get_student_personal_profile')
+  const personal = personalRows?.[0] || null
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg)' }}>

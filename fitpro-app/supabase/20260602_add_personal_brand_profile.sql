@@ -51,4 +51,37 @@ USING (
   AND id = public.current_user_personal_id()
 );
 
+CREATE OR REPLACE FUNCTION public.get_student_personal_profile()
+RETURNS TABLE (
+  id uuid,
+  nome text,
+  avatar_url text,
+  logo_url text,
+  telefone text,
+  whatsapp text,
+  instagram text,
+  site text,
+  bio text
+)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+  SELECT
+    personal.id,
+    personal.nome,
+    personal.avatar_url,
+    personal.logo_url,
+    personal.telefone,
+    personal.whatsapp,
+    personal.instagram,
+    personal.site,
+    personal.bio
+  FROM public.profiles personal
+  WHERE personal.id = public.current_user_personal_id()
+    AND personal.role = 'personal'
+  LIMIT 1
+$$;
+
 COMMIT;
