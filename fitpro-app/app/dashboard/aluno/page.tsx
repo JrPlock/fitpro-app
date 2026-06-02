@@ -227,37 +227,45 @@ export default async function DashboardAluno() {
             </p>
           )}
 
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {personal.whatsapp && whatsappHref(personal.whatsapp) && (
               <a href={whatsappHref(personal.whatsapp) || '#'} target="_blank" rel="noreferrer"
                 aria-label="Abrir WhatsApp do personal"
-                className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-105"
-                style={{ background: '#16a34a', color: 'white' }}>
-                <WhatsAppIcon />
+                className="h-12 rounded-xl flex items-center justify-center gap-2 px-3 text-sm font-bold transition-all hover:scale-[1.02]"
+                style={{ background: 'rgba(22,163,74,0.16)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.32)' }}>
+                <span className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#16a34a', color: 'white' }}>
+                  <WhatsAppIcon />
+                </span>
+                WhatsApp
               </a>
             )}
             {personal.instagram && instagramHref(personal.instagram) && (
               <a href={instagramHref(personal.instagram) || '#'} target="_blank" rel="noreferrer"
                 aria-label="Abrir Instagram do personal"
-                className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-105"
-                style={{ background: 'linear-gradient(135deg, #f97316, #db2777, #7c3aed)', color: 'white' }}>
-                <InstagramIcon />
+                className="h-12 rounded-xl flex items-center justify-center gap-2 px-3 text-sm font-bold transition-all hover:scale-[1.02]"
+                style={{ background: 'rgba(219,39,119,0.13)', color: '#f472b6', border: '1px solid rgba(244,114,182,0.32)' }}>
+                <span className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #f97316, #db2777, #7c3aed)', color: 'white' }}>
+                  <InstagramIcon />
+                </span>
+                Instagram
               </a>
             )}
             {personal.telefone && (
               <a href={`tel:${onlyNumbers(personal.telefone)}`}
                 aria-label="Ligar para o personal"
-                className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                className="h-12 rounded-xl flex items-center justify-center gap-2 px-3 text-sm font-bold transition-all hover:scale-[1.02]"
                 style={{ background: 'var(--bg-card2)', color: 'var(--accent)', border: '1px solid var(--border)' }}>
                 <Phone size={20} />
+                Ligar
               </a>
             )}
             {personal.site && siteHref(personal.site) && (
               <a href={siteHref(personal.site) || '#'} target="_blank" rel="noreferrer"
                 aria-label="Abrir site do personal"
-                className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                className="h-12 rounded-xl flex items-center justify-center gap-2 px-3 text-sm font-bold transition-all hover:scale-[1.02]"
                 style={{ background: 'var(--bg-card2)', color: 'var(--accent)', border: '1px solid var(--border)' }}>
                 <ExternalLink size={20} />
+                Site
               </a>
             )}
           </div>
