@@ -68,15 +68,16 @@ export default async function DashboardAluno() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { data: treinos }, { data: ultimaMedida }, { data: pacote }] = await Promise.all([
+  const [{ data: profile }, { data: treinos }, { data: ultimaMedida }, { data: pacote }, { data: ultimoPacote }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase.from('treinos').select('*').eq('aluno_id', user.id).order('created_at', { ascending: false }).limit(3),
     supabase.from('medidas').select('*').eq('aluno_id', user.id).order('data', { ascending: false }).limit(1).single(),
     supabase.from('pacotes_alunos').select('*').eq('aluno_id', user.id).eq('status', 'ativo').order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    supabase.from('pacotes_alunos').select('personal_id').eq('aluno_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
   ])
 
   const pacoteAtivo = pacote as PacoteAluno | null
-  const personalId = profile?.personal_id || pacoteAtivo?.personal_id
+  const personalId = profile?.personal_id || pacoteAtivo?.personal_id || ultimoPacote?.personal_id
   const { data: personalData } = personalId
     ? await supabase
       .from('profiles')

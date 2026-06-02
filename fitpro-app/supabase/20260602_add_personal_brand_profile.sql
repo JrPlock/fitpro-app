@@ -17,9 +17,28 @@ SECURITY DEFINER
 SET search_path = public
 STABLE
 AS $$
-  SELECT personal_id
-  FROM public.profiles
-  WHERE id = auth.uid()
+  SELECT COALESCE(
+    (
+      SELECT personal_id
+      FROM public.profiles
+      WHERE id = auth.uid()
+    ),
+    (
+      SELECT personal_id
+      FROM public.pacotes_alunos
+      WHERE aluno_id = auth.uid()
+        AND status = 'ativo'
+      ORDER BY created_at DESC
+      LIMIT 1
+    ),
+    (
+      SELECT personal_id
+      FROM public.pacotes_alunos
+      WHERE aluno_id = auth.uid()
+      ORDER BY created_at DESC
+      LIMIT 1
+    )
+  )
 $$;
 
 DROP POLICY IF EXISTS "profiles_aluno_select_personal" ON public.profiles;

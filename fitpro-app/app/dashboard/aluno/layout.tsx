@@ -25,7 +25,6 @@ export default async function AlunoLayout({ children }: { children: React.ReactN
     .from('pacotes_alunos')
     .select('personal_id')
     .eq('aluno_id', user.id)
-    .eq('status', 'ativo')
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
