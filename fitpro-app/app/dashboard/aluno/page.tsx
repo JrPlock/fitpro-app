@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 type PacoteAluno = {
+  personal_id: string
   tipo_atendimento: 'presencial' | 'online' | 'hibrido'
   data_inicio: string
   data_vencimento: string
@@ -74,17 +75,18 @@ export default async function DashboardAluno() {
     supabase.from('pacotes_alunos').select('*').eq('aluno_id', user.id).eq('status', 'ativo').order('created_at', { ascending: false }).limit(1).maybeSingle(),
   ])
 
-  const { data: personalData } = profile?.personal_id
+  const pacoteAtivo = pacote as PacoteAluno | null
+  const personalId = profile?.personal_id || pacoteAtivo?.personal_id
+  const { data: personalData } = personalId
     ? await supabase
       .from('profiles')
       .select('nome, avatar_url, logo_url, telefone, whatsapp, instagram, site, bio')
-      .eq('id', profile.personal_id)
+      .eq('id', personalId)
       .eq('role', 'personal')
       .maybeSingle()
     : { data: null }
 
   const firstName = profile?.nome?.split(' ')[0] || 'Aluno'
-  const pacoteAtivo = pacote as PacoteAluno | null
   const personal = personalData as PersonalProfile | null
   const vencimentoDiff = pacoteAtivo ? diasAte(pacoteAtivo.data_vencimento) : null
 
